@@ -194,7 +194,9 @@ VoicePrint/
 │
 ├── supabase/
 │   └── migrations/
-│       └── phase_4_rls.sql
+│       ├── phase_4_rls.sql
+│       ├── phase_5_hardening.sql
+│       └── phase_6_reliability_hardening.sql
 │
 ├── index.html
 ├── package.json
