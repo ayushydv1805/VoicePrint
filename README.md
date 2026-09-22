@@ -170,12 +170,14 @@ VoicePrint/
 │   │   ├── Phase4History.jsx
 │   │   ├── Phase4Home.jsx
 │   │   ├── Phase4Modal.jsx
-│   │   └── Phase5SafetyActions.jsx
+│   │   ├── Phase5SafetyActions.jsx
+│   │   └── Phase6ReliabilityPanel.jsx
 │   │
 │   ├── hooks/
 │   │   ├── useSafetySensors.js
 │   │   ├── usePhase4Core.js
-│   │   └── usePhase5Enhancements.js
+│   │   ├── usePhase5Enhancements.js
+│   │   └── usePhase6Status.js
 │   │
 │   ├── lib/
 │   │   ├── apiAuth.js
@@ -185,6 +187,7 @@ VoicePrint/
 │   │
 │   ├── Phase4App.jsx
 │   ├── Phase5App.jsx
+│   ├── Phase6App.jsx
 │   ├── phase4-entry.jsx
 │   ├── phase5-entry.jsx
 │   └── index.css
