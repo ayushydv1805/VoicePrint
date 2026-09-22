@@ -1,13 +1,23 @@
-# VoicePrint Phase 3 API
+# VoicePrint API
 
-Phase 3 adds a small Node/Express backend for:
+The VoicePrint API is the Node.js/Express backend used by the React safety application.
 
-- creating an SOS event with source + location
-- a visible 10-second confirmation window before remote dispatch
-- live location updates while the SOS flow is open
-- trusted-contact SMS delivery through Twilio when server credentials are configured
-- cancellation before dispatch
-- rate limiting, Helmet security headers, strict CORS, payload validation, idempotency, and server-side event ownership checks
+## Responsibilities
+
+- authenticate requests with Supabase Auth bearer tokens
+- keep trusted contacts scoped to the authenticated user
+- create and persist SOS events
+- snapshot and update live location
+- enforce SOS cooldowns
+- enforce the 10-second server-side confirmation gate
+- protect SOS creation with durable per-user idempotency keys
+- throttle server-side location updates
+- process optional Twilio trusted-contact SMS delivery
+- expose authenticated SOS event details and delivery/location records
+- expose health and service-readiness endpoints
+- attach request IDs to responses and operational logs
+- apply Helmet, CORS and API/SOS rate limiting
+- validate phone numbers, coordinates and event state transitions
 
 ## Run locally
 
@@ -17,22 +27,102 @@ npm install
 npm run dev
 ```
 
-The frontend defaults to `https://voiceprint-api.onrender.com`. Set `VITE_API_URL` in the frontend environment when using a different API URL.
+The default API port is `5000`.
 
-## SMS setup
+## Environment
 
-Do not put Twilio credentials in React/Vite code.
+Copy `.env.example` to `.env` and configure the server:
 
-Set these variables only on the backend host:
+```env
+PORT=5000
+CORS_ORIGINS=https://your-vercel-domain.example
 
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-- `TWILIO_FROM_NUMBER`
+ALERT_COOLDOWN_SECONDS=30
+LOCATION_UPDATE_MIN_SECONDS=5
+CONFIRMATION_WINDOW_SECONDS=10
 
-Contacts must be supplied in E.164 format, for example `+919876543210`.
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_FROM_NUMBER=
+```
 
-Without those secrets, the API stays in safe dry mode and reports that no SMS was sent.
+Twilio values are optional and must remain server-side secrets.
 
-## Important prototype boundary
+## Endpoints
 
-This backend is not an emergency-service dispatch system. It does not contact police, ambulance, 112, or any public-safety agency. Production deployment needs stronger device authentication, durable storage, audit logging, secret rotation, monitoring, provider delivery webhooks, and an approved responder integration.
+### Public
+
+```http
+GET /api/health
+GET /api/v1/status
+```
+
+### Authenticated
+
+```http
+GET    /api/v1/contacts
+POST   /api/v1/contacts
+DELETE /api/v1/contacts/:id
+
+GET    /api/v1/history
+GET    /api/v1/sos/events/:id
+
+POST   /api/v1/sos/events
+POST   /api/v1/sos/events/:id/location
+POST   /api/v1/sos/events/:id/dispatch
+POST   /api/v1/sos/events/:id/cancel
+```
+
+## Reliability behavior
+
+### Idempotency
+
+Every SOS creation request requires an `Idempotency-Key` header between 8 and 128 characters.
+
+The key is stored on `sos_events` and protected by a unique index over `(user_id, idempotency_key)`. A repeated request can return the original event instead of creating another SOS.
+
+### Cooldown
+
+The server reads the most recent SOS event from the database before creating another one. This keeps the cooldown behavior consistent across server restarts.
+
+### Location throttling
+
+The browser may send location updates during an active SOS, but the server enforces `LOCATION_UPDATE_MIN_SECONDS` using the persisted event timestamp.
+
+### Confirmation gate
+
+The backend calculates the confirmation window from the stored event creation time. Calling `/dispatch` before the gate expires returns HTTP `409` with `Retry-After`.
+
+### Request tracing
+
+Every response includes `X-Request-ID`. The same identifier is included in JSON responses and structured server error logs.
+
+## SMS delivery
+
+Twilio is used only when all required server variables are configured.
+
+The SMS contains:
+- VoicePrint SOS trigger source
+- latest known coordinates when available
+- a Google Maps link
+- a notice that trusted-contact alerting is not public emergency dispatch
+
+Without Twilio credentials, the event is still persisted and the delivery state reports that the provider is not configured.
+
+## Security boundary
+
+The backend filters every protected database query by the authenticated Supabase user ID.
+
+This application-level ownership check is not a substitute for PostgreSQL Row Level Security. RLS should be enabled and tested before real sensitive safety data is used in production.
+
+The backend never requires Twilio secrets in browser code.
+
+## Deployment
+
+The Render service can start the backend with:
+
+```text
+node server/index.js
+```
+
+An older Render configuration may still reference `server/index-phase4.js`; that entrypoint is intentionally kept aligned with the Phase 6 backend so it cannot silently deploy stale behavior.
