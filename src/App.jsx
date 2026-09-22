@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useClapDetector, useDeviceLocation } from "./hooks/useSafetySensors";
 
 const navItems = [
   { id: "home", label: "Home", icon: "⌂" },
@@ -11,41 +12,55 @@ function ShieldIcon({ small = false }) {
   return <span className={small ? "shield small" : "shield"}>✦</span>;
 }
 
-function StatusDot({ children }) {
-  return <span className="status"><span className="status-dot" />{children}</span>;
-}
-
 function App() {
   const [page, setPage] = useState("home");
   const [sosOpen, setSosOpen] = useState(false);
-  const [active, setActive] = useState(true);
+  const [sosSource, setSosSource] = useState("manual");
+  const [active, setActive] = useState(() => localStorage.getItem("voiceprint-protection") !== "false");
   const [contacts, setContacts] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("voiceprint-contacts")) || []; }
-    catch { return []; }
+    try { return JSON.parse(localStorage.getItem("voiceprint-contacts")) || []; } catch { return []; }
   });
 
-  useEffect(() => {
-    localStorage.setItem("voiceprint-contacts", JSON.stringify(contacts));
-  }, [contacts]);
+  const { listening, clapCount, micError, start: startMic, stop: stopMic } =
+    useClapDetector(() => activateEmergency("three-clap"));
 
-  const addContact = (contact) => setContacts((current) => [...current, contact]);
-  const activateDemo = () => { setSosOpen(true); setActive(false); };
-  const cancelSos = () => { setSosOpen(false); setActive(true); };
+  const { location, locationError, watching, requestLocation, startWatching, stopWatching } =
+    useDeviceLocation();
+
+  useEffect(() => localStorage.setItem("voiceprint-contacts", JSON.stringify(contacts)), [contacts]);
+  useEffect(() => {
+    localStorage.setItem("voiceprint-protection", String(active));
+    if (!active) stopMic();
+  }, [active, stopMic]);
+
+  const activateEmergency = useCallback((source = "manual") => {
+    setSosSource(source);
+    requestLocation();
+    setSosOpen(true);
+  }, [requestLocation]);
+
+  const toggleMic = async () => {
+    if (listening) stopMic();
+    else if (active) await startMic();
+  };
+
+  const toggleLocation = () => {
+    if (watching) stopWatching();
+    else startWatching();
+  };
+
+  const addContact = (contact) => setContacts((items) => [...items, contact]);
 
   return (
     <div className="app-shell">
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
-
+      <div className="ambient ambient-one" /><div className="ambient ambient-two" />
       <header className="topbar">
-        <button className="brand" onClick={() => setPage("home")} aria-label="VoicePrint home">
+        <button className="brand" onClick={() => setPage("home")}>
           <span className="brand-mark"><ShieldIcon small /></span>
           <span><strong>VoicePrint</strong><small>Emergency Safety System</small></span>
         </button>
         <div className="top-status">
-          <span className={active ? "live-pill" : "live-pill danger"}>
-            <span className="pulse" />{active ? "Protection Active" : "SOS Active"}
-          </span>
+          <span className={active ? "live-pill" : "live-pill danger"}><span className="pulse" />{active ? "Protection Active" : "Protection Paused"}</span>
           <button className="avatar">A</button>
         </div>
       </header>
@@ -53,214 +68,176 @@ function App() {
       <div className="layout">
         <aside className="sidebar">
           <div className="sidebar-label">CONTROL CENTER</div>
-          <nav>
-            {navItems.map((item) => (
-              <button key={item.id} className={page === item.id ? "nav-item active" : "nav-item"} onClick={() => setPage(item.id)}>
-                <span>{item.icon}</span>{item.label}
-              </button>
-            ))}
-          </nav>
+          <nav>{navItems.map((item) => (
+            <button key={item.id} className={page === item.id ? "nav-item active" : "nav-item"} onClick={() => setPage(item.id)}>
+              <span>{item.icon}</span>{item.label}
+            </button>
+          ))}</nav>
           <div className="sidebar-bottom">
-            <div className="security-mini">
-              <div className="mini-icon">✓</div>
-              <div><strong>Privacy first</strong><span>Your controls stay yours.</span></div>
-            </div>
-            <span className="version">VoicePrint v0.1</span>
+            <div className="security-mini"><div className="mini-icon">✓</div><div><strong>Privacy first</strong><span>Your controls stay yours.</span></div></div>
+            <span className="version">VoicePrint v0.2 · Phase 2</span>
           </div>
         </aside>
 
         <main className="main-content">
-          {page === "home" && <Home active={active} contacts={contacts} onEmergency={activateDemo} onNavigate={setPage} />}
-          {page === "emergency" && <Emergency active={active} onEmergency={activateDemo} onCancel={cancelSos} />}
+          {page === "home" && <Home active={active} listening={listening} clapCount={clapCount} contacts={contacts} location={location} watching={watching} onEmergency={() => activateEmergency("manual")} onNavigate={setPage} onToggleMic={toggleMic} onToggleLocation={toggleLocation} />}
+          {page === "emergency" && <Emergency active={active} listening={listening} clapCount={clapCount} location={location} locationError={locationError} onEmergency={() => activateEmergency("manual")} onToggleMic={toggleMic} />}
           {page === "contacts" && <Contacts contacts={contacts} onAdd={addContact} />}
-          {page === "settings" && <Settings active={active} setActive={setActive} />}
+          {page === "settings" && <Settings active={active} setActive={setActive} listening={listening} clapCount={clapCount} micError={micError} onToggleMic={toggleMic} watching={watching} location={location} locationError={locationError} onToggleLocation={toggleLocation} />}
         </main>
       </div>
 
-      <nav className="mobile-nav">
-        {navItems.map((item) => (
-          <button key={item.id} className={page === item.id ? "mobile-nav-item active" : "mobile-nav-item"} onClick={() => setPage(item.id)}>
-            <span>{item.icon}</span><small>{item.label}</small>
-          </button>
-        ))}
-      </nav>
+      <nav className="mobile-nav">{navItems.map((item) => (
+        <button key={item.id} className={page === item.id ? "mobile-nav-item active" : "mobile-nav-item"} onClick={() => setPage(item.id)}>
+          <span>{item.icon}</span><small>{item.label}</small>
+        </button>
+      ))}</nav>
 
-      {sosOpen && <SosOverlay contacts={contacts} onCancel={cancelSos} />}
+      {sosOpen && <SosOverlay contacts={contacts} source={sosSource} location={location} onCancel={() => setSosOpen(false)} />}
     </div>
   );
 }
 
-function Home({ active, contacts, onEmergency, onNavigate }) {
-  return (
-    <div className="page">
-      <section className="hero">
-        <div>
-          <div className="eyebrow"><span className="eyebrow-line" /> YOUR SAFETY, ALWAYS WITH YOU</div>
-          <h1>When you can't<br /><span>reach your phone.</span></h1>
-          <p className="hero-copy">VoicePrint is being built to trigger an emergency response without requiring you to unlock, hold, or type on your phone.</p>
-          <div className="hero-actions">
-            <button className="primary-btn" onClick={onEmergency}><span className="btn-icon">✦</span> Test SOS</button>
-            <button className="secondary-btn" onClick={() => onNavigate("settings")}>Configure protection <span>→</span></button>
-          </div>
+function Home({ active, listening, clapCount, contacts, location, watching, onEmergency, onNavigate, onToggleMic, onToggleLocation }) {
+  return <div className="page">
+    <section className="hero">
+      <div>
+        <div className="eyebrow"><span className="eyebrow-line" /> HANDS-FREE SAFETY · PHASE 2</div>
+        <h1>When you can't<br /><span>reach your phone.</span></h1>
+        <p className="hero-copy">VoicePrint now has a browser-based three-clap detector and device-location capture. Permissions stay under your control while we build the secure emergency backend.</p>
+        <div className="hero-actions">
+          <button className="primary-btn" onClick={onEmergency}>✦ Test SOS</button>
+          <button className={listening ? "secondary-btn listening-btn" : "secondary-btn"} onClick={onToggleMic}>
+            <span className="mic-live-dot" />{listening ? `Listening · ${clapCount}/3` : "Start clap detection"}
+          </button>
         </div>
+      </div>
+      <div className="hero-orb">
+        <div className={listening ? "orb-ring ring-one listening-ring" : "orb-ring ring-one"} /><div className="orb-ring ring-two" />
+        <div className={listening ? "orb-core listening-core" : "orb-core"}><ShieldIcon /><span>{listening ? "LISTENING" : "READY"}</span></div>
+        <div className="orb-badge badge-top">MIC <b>{listening ? "ON" : "OFF"}</b></div>
+        <div className="orb-badge badge-bottom">GPS <b>{location ? "READY" : "OFF"}</b></div>
+      </div>
+    </section>
 
-        <div className="hero-orb">
-          <div className="orb-ring ring-one" /><div className="orb-ring ring-two" />
-          <div className="orb-core"><ShieldIcon /><span>READY</span></div>
-          <div className="orb-badge badge-top">MIC <b>ON</b></div>
-          <div className="orb-badge badge-bottom">GPS <b>READY</b></div>
-        </div>
-      </section>
+    <section className="status-grid">
+      <StatusCard icon="◉" title="Sound Detection" value={listening ? "Listening" : "Standby"} detail={listening ? `${clapCount}/3 claps detected` : "3-clap trigger · tap to start"} good={listening} onClick={onToggleMic} />
+      <StatusCard icon="⌖" title="Location" value={watching ? "Live" : location ? "Ready" : "Off"} detail={watching ? "High-accuracy location active" : "Tap to request GPS"} good={Boolean(location)} onClick={onToggleLocation} />
+      <StatusCard icon="♧" title="Emergency Contacts" value={contacts.length ? String(contacts.length) : "0"} detail={contacts.length ? "Trusted contacts added" : "Add your first contact"} good={contacts.length > 0} onClick={() => onNavigate("contacts")} />
+    </section>
 
-      <section className="status-grid">
-        <StatusCard icon="◉" title="Sound Detection" value={active ? "Ready" : "Paused"} detail="3-clap trigger configured" good={active} />
-        <StatusCard icon="⌖" title="Location" value="Ready" detail="Permission can be enabled" good />
-        <StatusCard icon="♧" title="Emergency Contacts" value={contacts.length ? String(contacts.length) : "0"} detail={contacts.length ? "Trusted contacts added" : "Add your first contact"} good={contacts.length > 0} onClick={() => onNavigate("contacts")} />
-      </section>
+    <section className="dashboard-grid">
+      <div className="panel map-panel">
+        <div className="panel-head"><div><span className="panel-kicker">EMERGENCY LOCATION</span><h2>Device location</h2></div><span className="status"><span className={location ? "status-dot" : "status-dot purple"} />{watching ? "Live" : location ? "Ready" : "Not enabled"}</span></div>
+        <LocationPreview location={location} />
+      </div>
+      <div className="panel checklist">
+        <div className="panel-head"><div><span className="panel-kicker">PHASE 2 SETUP</span><h2>Protection checklist</h2></div></div>
+        <ChecklistRow done label="VoicePrint interface ready" />
+        <ChecklistRow done={listening} label="Microphone + clap detector" action={!listening ? onToggleMic : null} />
+        <ChecklistRow done={contacts.length > 0} label="Emergency contact added" action={!contacts.length ? () => onNavigate("contacts") : null} />
+        <ChecklistRow done={Boolean(location)} label="Location permission" action={!location ? onToggleLocation : null} />
+      </div>
+    </section>
 
-      <section className="dashboard-grid">
-        <div className="panel map-panel">
-          <div className="panel-head"><div><span className="panel-kicker">EMERGENCY LOCATION</span><h2>Location sharing</h2></div><StatusDot>Standby</StatusDot></div>
-          <div className="map-placeholder">
-            <div className="map-grid" /><div className="map-center"><div className="map-pulse" /><span>⌖</span></div>
-            <div className="map-caption">Live location will appear here during an active SOS</div>
-          </div>
-        </div>
+    <div className="phase-note"><span>02</span><div><strong>Phase 2 is active</strong><br />Microphone and GPS now work in the browser after permission. Real SMS, police/ambulance dispatch and reliable background monitoring are deliberately not connected yet.</div></div>
+  </div>;
+}
 
-        <div className="panel checklist">
-          <div className="panel-head"><div><span className="panel-kicker">SETUP</span><h2>Protection checklist</h2></div></div>
-          <ChecklistRow done label="VoicePrint account created" />
-          <ChecklistRow done label="SOS trigger selected" />
-          <ChecklistRow done={contacts.length > 0} label="Emergency contact added" action={!contacts.length ? () => onNavigate("contacts") : null} />
-          <ChecklistRow label="Location permission" action={() => onNavigate("settings")} />
-        </div>
-      </section>
-
-      <div className="prototype-note"><span>●</span><div><strong>Prototype mode</strong><br />The SOS button currently demonstrates the emergency flow. Police, ambulance, SMS, live GPS and background microphone features will be connected in later phases.</div></div>
-    </div>
-  );
+function LocationPreview({ location }) {
+  if (!location) return <div className="map-placeholder location-off"><div className="map-grid" /><div className="location-empty"><span>⌖</span><strong>Location not enabled</strong><small>Allow location access from the dashboard or settings.</small></div></div>;
+  return <div className="map-placeholder"><div className="map-grid" /><div className="map-center"><div className="map-pulse" /><span>⌖</span></div><div className="coordinate-card"><span>DEVICE LOCATION</span><strong>{location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}</strong><small>± {Math.round(location.accuracy)} m accuracy</small></div></div>;
 }
 
 function StatusCard({ icon, title, value, detail, good, onClick }) {
-  return (
-    <button className="status-card" onClick={onClick}>
-      <div className="status-card-icon">{icon}</div>
-      <div className="status-card-text"><span>{title}</span><strong><i className={good ? "good-dot" : "muted-dot"} />{value}</strong><small>{detail}</small></div>
-      {onClick && <span className="card-arrow">→</span>}
-    </button>
-  );
+  return <button className="status-card" onClick={onClick}><div className="status-card-icon">{icon}</div><div className="status-card-text"><span>{title}</span><strong><i className={good ? "good-dot" : "muted-dot"} />{value}</strong><small>{detail}</small></div>{onClick && <span className="card-arrow">→</span>}</button>;
 }
 
 function ChecklistRow({ done, label, action }) {
   return <div className="check-row"><span className={done ? "check done" : "check"}>{done ? "✓" : "!"}</span><span>{label}</span>{!done && action && <button onClick={action}>Set up →</button>}</div>;
 }
 
-function Emergency({ active, onEmergency, onCancel }) {
-  return (
-    <div className="page">
-      <div className="page-heading"><div><span className="panel-kicker">EMERGENCY CENTER</span><h1>Emergency control</h1><p>Test the response flow now. Real emergency integrations come later.</p></div><span className={active ? "state-badge" : "state-badge danger"}>{active ? "STANDBY" : "SOS ACTIVE"}</span></div>
-      <div className="emergency-layout">
-        <div className="emergency-card">
-          <div className="emergency-glow" /><div className="sos-symbol">✦</div>
-          <h2>{active ? "Emergency system ready" : "Emergency active"}</h2>
-          <p>{active ? "Press the button below to simulate the SOS trigger." : "Your emergency flow is currently active."}</p>
-          {active ? <button className="sos-btn" onClick={onEmergency}><span>✦</span> ACTIVATE SOS</button> : <button className="cancel-btn" onClick={onCancel}>I'm Safe — Cancel SOS</button>}
-          <span className="safety-hint">Demo action only · no real emergency call is placed</span>
-        </div>
-
-        <div className="panel response-panel">
-          <span className="panel-kicker">RESPONSE FLOW</span><h2>What happens next</h2>
-          <FlowStep number="01" title="Detect" text="Configured sound pattern is recognized." />
-          <FlowStep number="02" title="Verify" text="The trigger is checked before activation." />
-          <FlowStep number="03" title="Locate" text="Device location is collected with permission." />
-          <FlowStep number="04" title="Alert" text="Authorized contacts and emergency services can be notified through supported integrations." />
-        </div>
+function Emergency({ active, listening, clapCount, location, locationError, onEmergency, onToggleMic }) {
+  return <div className="page">
+    <div className="page-heading"><div><span className="panel-kicker">EMERGENCY CENTER</span><h1>Emergency control</h1><p>Test the Phase 2 detection flow before real alert delivery is connected.</p></div><span className={active ? "state-badge" : "state-badge danger"}>{active ? "PROTECTED" : "PAUSED"}</span></div>
+    <div className="emergency-layout">
+      <div className="emergency-card">
+        <div className="sos-symbol">✦</div>
+        <h2>{listening ? `Clap detector ready · ${clapCount}/3` : "Emergency system ready"}</h2>
+        <p>{listening ? "Make three distinct sharp claps within about three seconds to open the SOS flow." : "Start microphone detection to enable the hands-free prototype trigger."}</p>
+        <button className={listening ? "sos-btn detector-active" : "sos-btn"} onClick={onToggleMic}><span>{listening ? "◉" : "🎙"}</span>{listening ? " STOP LISTENING" : " START LISTENING"}</button>
+        <button className="manual-sos-link" onClick={onEmergency}>or test SOS manually →</button>
+        <span className="safety-hint">Prototype only · no emergency call, SMS, police, or ambulance request is sent</span>
+      </div>
+      <div className="panel response-panel">
+        <span className="panel-kicker">RESPONSE FLOW</span><h2>Phase 2 pipeline</h2>
+        <FlowStep number="01" title="Listen" text="Browser microphone permission enables local clap analysis." done={listening} />
+        <FlowStep number="02" title="Detect 3 claps" text="Three sharp sound spikes are recognized within a short window." done={clapCount > 0} />
+        <FlowStep number="03" title="Locate" text={location ? "Current device coordinates are available." : "Location is requested when an SOS is triggered."} done={Boolean(location)} />
+        <FlowStep number="04" title="Alert" text="Next phase: secure backend, trusted contacts and approved emergency-service workflow." />
+        {locationError && <div className="inline-error">⌖ {locationError}</div>}
       </div>
     </div>
-  );
+  </div>;
 }
 
-function FlowStep({ number, title, text }) {
-  return <div className="flow-step"><span>{number}</span><div><strong>{title}</strong><p>{text}</p></div></div>;
+function FlowStep({ number, title, text, done }) {
+  return <div className="flow-step"><span>{number}</span><div><strong>{title}</strong><p>{text}</p></div><b className={done ? "flow-check done" : "flow-check"}>{done ? "✓" : "○"}</b></div>;
 }
 
 function Contacts({ contacts, onAdd }) {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [relationship, setRelationship] = useState("Family");
-
-  const submit = (e) => {
-    e.preventDefault();
-    if (!name.trim() || !phone.trim()) return;
-    onAdd({ id: Date.now(), name: name.trim(), phone: phone.trim(), relationship });
-    setName(""); setPhone("");
-  };
-
-  return (
-    <div className="page">
-      <div className="page-heading"><div><span className="panel-kicker">TRUSTED NETWORK</span><h1>Emergency contacts</h1><p>Choose who should receive your emergency alert.</p></div><span className="count-badge">{contacts.length} saved</span></div>
-      <div className="contacts-layout">
-        <form className="panel contact-form" onSubmit={submit}>
-          <span className="panel-kicker">ADD CONTACT</span><h2>Build your safety circle</h2><p className="muted">Only contacts you add will be stored in this prototype.</p>
-          <label>Name<input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Mom" /></label>
-          <label>Phone<input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" /></label>
-          <label>Relationship<select value={relationship} onChange={(e) => setRelationship(e.target.value)}><option>Family</option><option>Friend</option><option>Partner</option><option>Caregiver</option><option>Other</option></select></label>
-          <button className="primary-btn wide" type="submit">+ Add emergency contact</button>
-        </form>
-
-        <div className="panel saved-contacts">
-          <span className="panel-kicker">YOUR CONTACTS</span><h2>Trusted people</h2>
-          {contacts.length === 0 ? <div className="empty-state"><span>♧</span><strong>No contacts yet</strong><p>Add someone you trust before enabling real alerts.</p></div> : contacts.map((contact) => (
-            <div className="contact-row" key={contact.id}><div className="contact-avatar">{contact.name[0].toUpperCase()}</div><div><strong>{contact.name}</strong><span>{contact.relationship} · {contact.phone}</span></div><span className="contact-ok">✓</span></div>
-          ))}
-        </div>
+  const [name, setName] = useState(""); const [phone, setPhone] = useState(""); const [relationship, setRelationship] = useState("Family");
+  const submit = (e) => { e.preventDefault(); if (!name.trim() || !phone.trim()) return; onAdd({ id: Date.now(), name: name.trim(), phone: phone.trim(), relationship }); setName(""); setPhone(""); };
+  return <div className="page">
+    <div className="page-heading"><div><span className="panel-kicker">TRUSTED NETWORK</span><h1>Emergency contacts</h1><p>Choose who should receive your emergency alert.</p></div><span className="count-badge">{contacts.length} saved</span></div>
+    <div className="contacts-layout">
+      <form className="panel contact-form" onSubmit={submit}><span className="panel-kicker">ADD CONTACT</span><h2>Build your safety circle</h2><p className="muted">Contacts stay in browser storage until a secure backend is added.</p>
+        <label>Name<input required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Mom" /></label>
+        <label>Phone<input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" /></label>
+        <label>Relationship<select value={relationship} onChange={(e) => setRelationship(e.target.value)}><option>Family</option><option>Friend</option><option>Partner</option><option>Caregiver</option><option>Other</option></select></label>
+        <button className="primary-btn wide" type="submit">+ Add emergency contact</button>
+      </form>
+      <div className="panel saved-contacts"><span className="panel-kicker">YOUR CONTACTS</span><h2>Trusted people</h2>
+        {contacts.length === 0 ? <div className="empty-state"><span>♧</span><strong>No contacts yet</strong><p>Add someone you trust before connecting real alert delivery.</p></div> : contacts.map((contact) => <div className="contact-row" key={contact.id}><div className="contact-avatar">{contact.name[0].toUpperCase()}</div><div><strong>{contact.name}</strong><span>{contact.relationship} · {contact.phone}</span></div><span className="contact-ok">✓</span></div>)}
       </div>
     </div>
-  );
+  </div>;
 }
 
-function Settings({ active, setActive }) {
-  return (
-    <div className="page">
-      <div className="page-heading"><div><span className="panel-kicker">CONFIGURATION</span><h1>Protection settings</h1><p>Control how your VoicePrint prototype behaves.</p></div></div>
-      <div className="settings-grid">
-        <div className="panel settings-main">
-          <SettingToggle title="Protection mode" description="Enable or pause the emergency trigger system." checked={active} onChange={() => setActive(!active)} />
-          <div className="setting-divider" />
-          <div className="setting-item"><div><strong>SOS trigger</strong><span>3 distinct claps · prototype detector</span></div><button className="ghost-btn">Configure</button></div>
-          <div className="setting-divider" />
-          <div className="setting-item"><div><strong>Location sharing</strong><span>Ask for device permission before collecting location.</span></div><button className="ghost-btn">Permission</button></div>
-          <div className="setting-divider" />
-          <div className="setting-item"><div><strong>Emergency services</strong><span>Official emergency integrations will be configured in a later phase.</span></div><span className="coming-badge">COMING SOON</span></div>
-        </div>
-
-        <div className="panel privacy-card">
-          <div className="privacy-icon">✓</div><span className="panel-kicker">PRIVACY</span><h2>Your data, your control.</h2>
-          <p>VoicePrint will be designed to collect and share emergency information only when required for the features you enable.</p>
-          <div className="privacy-points"><span>✓</span> Explicit permissions</div>
-          <div className="privacy-points"><span>✓</span> Authorized contacts</div>
-          <div className="privacy-points"><span>✓</span> Limited emergency sharing</div>
-        </div>
+function Settings({ active, setActive, listening, clapCount, micError, onToggleMic, watching, location, locationError, onToggleLocation }) {
+  return <div className="page">
+    <div className="page-heading"><div><span className="panel-kicker">CONFIGURATION</span><h1>Protection settings</h1><p>Control the sensors used by the Phase 2 prototype.</p></div></div>
+    <div className="settings-grid">
+      <div className="panel settings-main">
+        <SettingToggle title="Protection mode" description="Enable or pause the emergency trigger system." checked={active} onChange={() => setActive(!active)} />
+        <div className="setting-divider" />
+        <div className="setting-item"><div><strong>Microphone detector</strong><span>{listening ? `Listening locally · ${clapCount}/3 claps` : "Three-clap pattern · requires microphone permission"}</span></div><button className="ghost-btn" onClick={onToggleMic}>{listening ? "Stop" : "Start"}</button></div>
+        {micError && <div className="setting-error">🎙 {micError}</div>}
+        <div className="setting-divider" />
+        <div className="setting-item"><div><strong>Location sharing</strong><span>{watching ? "High-accuracy location watch is active." : location ? "A recent device location is available." : "Request GPS permission to make a location available."}</span></div><button className="ghost-btn" onClick={onToggleLocation}>{watching ? "Stop" : "Enable"}</button></div>
+        {locationError && <div className="setting-error">⌖ {locationError}</div>}
+        <div className="setting-divider" />
+        <div className="setting-item"><div><strong>Emergency services</strong><span>Official responder integrations require a secure backend and approved service/API workflow.</span></div><span className="coming-badge">NEXT PHASE</span></div>
       </div>
+      <div className="panel privacy-card"><div className="privacy-icon">✓</div><span className="panel-kicker">PHASE 2 · PRIVACY</span><h2>Permission before sensors.</h2><p>Clap detection runs locally in the browser. Voice audio is not uploaded by this prototype.</p><div className="privacy-points"><span>✓</span> Local clap analysis</div><div className="privacy-points"><span>✓</span> Explicit browser permissions</div><div className="privacy-points"><span>✓</span> Location only when requested</div></div>
     </div>
-  );
+  </div>;
 }
 
 function SettingToggle({ title, description, checked, onChange }) {
-  return <div className="setting-item"><div><strong>{title}</strong><span>{description}</span></div><button className={checked ? "toggle on" : "toggle"} onClick={onChange} aria-label="Toggle protection"><span /></button></div>;
+  return <div className="setting-item"><div><strong>{title}</strong><span>{description}</span></div><button type="button" className={checked ? "toggle on" : "toggle"} onClick={onChange}><span /></button></div>;
 }
 
-function SosOverlay({ contacts, onCancel }) {
-  return (
-    <div className="sos-overlay">
-      <div className="sos-modal">
-        <div className="sos-modal-icon">✦</div><span className="danger-label">SOS ACTIVATED</span><h2>Emergency flow is active</h2>
-        <p>This prototype is simulating the response sequence. No police, ambulance, or SMS request has been sent.</p>
-        <div className="alert-list"><div><span>✓</span> SOS event created</div><div><span>✓</span> Location step ready</div><div><span>{contacts.length ? "✓" : "!"}</span> {contacts.length ? contacts.length + " trusted contact(s) ready" : "No emergency contacts configured"}</div></div>
-        <button className="cancel-btn" onClick={onCancel}>I'm Safe — End Test</button>
-      </div>
-    </div>
-  );
+function SosOverlay({ contacts, source, location, onCancel }) {
+  const [seconds, setSeconds] = useState(10);
+  useEffect(() => { const timer = setInterval(() => setSeconds((value) => Math.max(0, value - 1)), 1000); return () => clearInterval(timer); }, []);
+  const sourceLabel = source === "three-clap" ? "3-CLAP PATTERN DETECTED" : "MANUAL TEST";
+  return <div className="sos-overlay"><div className="sos-modal"><div className="sos-modal-icon">✦</div><span className="danger-label">{sourceLabel}</span><h2>SOS flow activated</h2><p>This is a local safety-flow simulation. Nothing has been sent to police, ambulance or contacts.</p>
+    <div className="sos-summary"><div><span>LOCATION</span><strong>{location ? `${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}` : "Waiting for permission"}</strong></div><div><span>CONTACTS</span><strong>{contacts.length ? `${contacts.length} trusted` : "None configured"}</strong></div><div><span>DELIVERY</span><strong>Not connected</strong></div></div>
+    <div className="countdown">{seconds}<small> sec</small></div>
+    <div className="alert-list"><div><span>✓</span> Emergency event created locally</div><div><span>{location ? "✓" : "!"}</span> {location ? "Current coordinates attached" : "Location still unavailable"}</div><div><span>!</span> No SMS / police / ambulance request sent</div></div>
+    <button className="cancel-btn wide" onClick={onCancel}>I'm Safe — End Test</button>
+  </div></div>;
 }
 
 export default App;
