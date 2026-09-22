@@ -487,6 +487,28 @@ Pending event
 
 This server-side gate prevents a client-only countdown from being the only protection around alert delivery.
 
+## Phase 6 Reliability Layer
+
+Phase 6 strengthens the cloud path so repeated requests and common client/network failures are handled more predictably.
+
+### Durable SOS idempotency
+Each authenticated SOS creation request must include an idempotency key. The key is stored with the event and protected by a per-user unique database index. Repeating the same request can therefore return the original event instead of creating another SOS record.
+
+### Server-side location throttling
+The browser already limits location updates, but Phase 6 also enforces the minimum update interval on the server. This prevents a modified client from continuously writing location snapshots.
+
+### Request tracing
+API responses expose an X-Request-ID header and include the same identifier in JSON error/success payloads. Server logs record that identifier for operational troubleshooting.
+
+### Event inspection
+Authenticated clients can request one SOS event with its delivery records and recent location snapshots:
+
+```http
+GET /api/v1/sos/events/:id
+```
+
+### Live reliability diagnostics
+The Settings area now includes a Phase 6 service-readiness panel showing API reachability, browser network state, confirmation-window settings, location-update interval, and key backend capabilities.
 ---
 
 # Phase 5 PWA & Device Features
@@ -684,6 +706,7 @@ Before real-world use, verify:
 | Phase 3 | Backend/API foundation |
 | Phase 4 | Authentication, cloud contacts, persistent history, SOS events and controlled dispatch flow |
 | Phase 5 | Security/performance hardening, PWA foundation, offline awareness, notifications, Wake Lock, quick emergency actions and database constraints |
+| Phase 6 | Reliability hardening, durable SOS idempotency, server-side location throttling, request tracing, event-detail inspection and live API diagnostics |
 
 ---
 
