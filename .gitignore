@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# environment files
+.env
+.env.*
+!.env.example
+
+# build output
+dist/
+server/dist/
+
+# local Vercel metadata
+.vercel/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
