@@ -125,6 +125,14 @@ async function dispatchEvent(eventId, user, token) {
     if (!event) throw new Error("SOS event not found.");
     if (event.status === "cancelled") throw new Error("This SOS was cancelled.");
     if (event.status === "dispatched") return eventPublic(event);
+    const createdAt = Date.parse(event.created_at || "");
+    const remaining = CONFIRMATION_WINDOW_MS - (Number.isFinite(createdAt) ? Date.now() - createdAt : 0);
+    if (remaining > 0) {
+      const gateError = new Error("Confirmation window is still active.");
+      gateError.status = 409;
+      gateError.retryAfterSeconds = Math.ceil(remaining / 1000);
+      throw gateError;
+    }
 
     const contacts = await supabaseRest("sos_event_deliveries", { query:`?select=*&event_id=eq.${encodeURIComponent(eventId)}&user_id=eq.${encodeURIComponent(user.id)}` }, token);
     const location = event.latitude == null ? null : { latitude:event.latitude, longitude:event.longitude, accuracy:event.accuracy_m };
@@ -198,13 +206,27 @@ app.get("/api/v1/history", async (req,res) => {
 app.post("/api/v1/sos/events", async (req,res) => {
   const user=await requireUser(req,res); if(!user)return;
   const now=Date.now();
+  const idem=req.header("Idempotency-Key");
+  if(idem && !/^[a-zA-Z0-9._:-]{8,128}$/.test(idem)) {
+    return res.status(400).json({ok:false,error:"Invalid idempotency key."});
+  }
+  if(idem){
+    const existingId=idempotencyByUser.get(user.id + ":" + idem);
+    if(existingId){
+      try{
+        const existing=await supabaseRest("sos_events",{query:`?select=*&id=eq.${encodeURIComponent(existingId)}&user_id=eq.${encodeURIComponent(user.id)}`},tokenFrom(req));
+        if(existing?.[0]) return res.status(200).json({ok:true,event:eventPublic(existing[0]),replayed:true});
+      }catch(error){
+        return res.status(502).json({ok:false,error:error.message});
+      }
+    }
+  }
   const previous=lastSosByUser.get(user.id)||0;
   if(now-previous<ALERT_COOLDOWN_MS){
     const retry=Math.ceil((ALERT_COOLDOWN_MS-(now-previous))/1000);
     res.set("Retry-After",String(retry));
     return res.status(429).json({ok:false,error:`Please wait ${retry}s before creating another SOS event.`});
   }
-  const idem=req.header("Idempotency-Key");
   const source=req.body?.source==="three-clap"?"three-clap":"manual";
   const location=cleanLocation(req.body?.location);
   let contacts=[];
@@ -250,7 +272,13 @@ app.post("/api/v1/sos/events/:id/dispatch", async (req,res) => {
   try {
     const event=await dispatchEvent(req.params.id,user,tokenFrom(req));
     return res.json({ok:true,event});
-  } catch(error){return res.status(502).json({ok:false,error:error.message});}
+  } catch(error){
+    if(error?.status){
+      if(error.retryAfterSeconds) res.set("Retry-After",String(error.retryAfterSeconds));
+      return res.status(error.status).json({ok:false,error:error.message,retryAfterSeconds:error.retryAfterSeconds||undefined});
+    }
+    return res.status(502).json({ok:false,error:error.message});
+  }
 });
 
 app.post("/api/v1/sos/events/:id/cancel", async (req,res) => {
