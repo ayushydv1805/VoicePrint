@@ -1,5 +1,4 @@
 import "dotenv/config";
-import crypto from "node:crypto";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -167,8 +166,8 @@ async function dispatchEvent(eventId, user, token) {
   try { return await work; } finally { eventLocks.delete(eventId); }
 }
 
-app.get("/api/health", (_req,res)=>res.json({ok:true,service:"voiceprint-api",version:"phase-4",time:new Date().toISOString(),smsConfigured,authRequired:true}));
-app.get("/api/v1/status", (_req,res)=>res.json({ok:true,phase:"4",sms:{configured:smsConfigured,provider:smsConfigured?"twilio":null},features:{authentication:true,persistentContacts:true,sosHistory:true,liveLocation:true,trustedContactSms:smsConfigured,emergencyServicesDispatch:false}}));
+app.get("/api/health", (_req,res)=>res.json({ok:true,service:"voiceprint-api",version:"phase-5",time:new Date().toISOString(),smsConfigured,authRequired:true}));
+app.get("/api/v1/status", (_req,res)=>res.json({ok:true,phase:"5",sms:{configured:smsConfigured,provider:smsConfigured?"twilio":null},features:{authentication:true,persistentContacts:true,sosHistory:true,liveLocation:true,trustedContactSms:smsConfigured,emergencyServicesDispatch:false}}));
 
 app.get("/api/v1/contacts", async (req,res) => {
   const user = await requireUser(req,res); if (!user) return;
