@@ -1,16 +1,2 @@
-import { createClient } from "@supabase/supabase-js";
-
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-if (!url || !key) {
-  throw new Error("VoicePrint requires VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
-}
-
-export const supabase = createClient(url, key, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-});
+export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://acotqumjfmipssnwupdw.supabase.co";
+export const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_wRCWwo6Pzhkm-6oligdx6A_Jwrfq9PH";
