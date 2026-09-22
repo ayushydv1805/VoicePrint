@@ -1,4 +1,8 @@
-const DEFAULT_API_URL = "https://voiceprint-api.onrender.com";
+const DEFAULT_API_URL = "https://voiceprint-api-v4.onrender.com";
+
+function getAccessToken() {
+  try { return JSON.parse(localStorage.getItem("voiceprint-auth-session"))?.access_token || ""; } catch { return ""; }
+}
 
 export const API_BASE_URL = (
   import.meta.env.VITE_API_URL || DEFAULT_API_URL
@@ -25,6 +29,7 @@ async function request(path, options = {}) {
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
+        ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}),
         "X-VoicePrint-Device": getStoredDeviceId(),
         ...(options.headers || {}),
       },
