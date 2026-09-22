@@ -26,3 +26,32 @@
 .sos-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:22px 0}.sos-summary div{padding:12px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid var(--line);text-align:left}.sos-summary span,.sos-summary strong{display:block}.sos-summary span{color:#66738d;font-size:8px;letter-spacing:.1em}.sos-summary strong{font-size:11px;color:#d7ddeb;margin-top:5px;word-break:break-word}.countdown{font-family:"Space Grotesk";font-size:40px;color:#ff93a5;margin:10px 0}.countdown small{font-family:"DM Sans";font-size:11px;color:#697693}
 @keyframes pulseRing{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.05);opacity:1}}
 @media(max-width:760px){.sos-summary{grid-template-columns:1fr}.emergency-card{padding:28px 18px}}
+
+
+/* Phase 4 cloud UI */
+.cloud-fab{position:fixed;right:22px;bottom:22px;z-index:70;border:1px solid rgba(124,108,255,.28);background:rgba(20,28,48,.92);color:#dcd9ff;border-radius:999px;padding:11px 15px;font-size:12px;font-weight:800;box-shadow:0 14px 40px rgba(0,0,0,.35);backdrop-filter:blur(14px)}
+.cloud-fab:hover{transform:translateY(-1px);border-color:rgba(124,108,255,.5)}
+.cloud-popover{position:fixed;right:22px;bottom:72px;width:min(360px,calc(100vw - 32px));z-index:80;padding:18px;border:1px solid var(--line);border-radius:16px;background:rgba(13,19,34,.96);box-shadow:0 25px 80px rgba(0,0,0,.55);backdrop-filter:blur(18px)}
+.cloud-popover-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.cloud-popover-head h3{margin:6px 0 0;font-family:"Space Grotesk";font-size:19px;color:#eef2ff}
+.cloud-popover-head>button{border:0;background:transparent;color:#8d99b5;font-size:20px}
+.cloud-popover>label{display:block;margin-top:12px;color:#aeb8cd;font-size:11px;font-weight:700}
+.cloud-popover input{display:block;width:100%;margin-top:7px;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:rgba(0,0,0,.16);color:#fff}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:14px 0;padding:4px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025)}
+.auth-tabs button{border:0;border-radius:8px;padding:9px;background:transparent;color:#7e8aa2;font-size:11px;font-weight:700}
+.auth-tabs button.active{background:rgba(124,108,255,.14);color:#c9c3ff}
+.auth-message{margin-top:12px;padding:10px 11px;border:1px solid rgba(124,108,255,.18);border-radius:9px;background:rgba(124,108,255,.06);color:#bcb6ff;font-size:11px;line-height:1.45}
+.auth-note,.form-hint{display:block;margin-top:12px;color:#66738d;font-size:10px;line-height:1.4}
+.hero-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;color:#6f7b94;font-size:10px}
+.global-error{position:fixed;right:22px;top:88px;z-index:90;max-width:min(460px,calc(100vw - 44px));padding:11px 12px;border:1px solid rgba(251,113,133,.22);background:rgba(42,17,30,.96);border-radius:10px;color:#ffb0bb;font-size:11px;box-shadow:0 16px 50px rgba(0,0,0,.35)}
+.global-error span{margin-right:7px;font-weight:800}.global-error button{float:right;margin-left:12px;border:0;background:transparent;color:#ffb0bb}
+.history-panel{min-height:420px}.history-list{display:grid}.history-row{display:grid;grid-template-columns:40px 1.3fr auto 1fr;gap:12px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+.history-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(124,108,255,.08);color:#a39aff}
+.history-icon.cancelled{color:#9aa4b8;background:rgba(148,163,184,.06)}
+.history-icon.dispatched{color:#7ef0bf;background:rgba(52,211,153,.08)}
+.history-main strong,.history-main span{display:block}.history-main strong{font-size:13px}.history-main span{margin-top:3px;color:var(--muted);font-size:10px}
+.history-status{text-transform:capitalize;font-size:10px;font-weight:800;color:#a9a2ff}
+.history-status.dispatched{color:#7ef0bf}.history-status.cancelled{color:#9aa4b8}
+.history-location{text-align:right;color:#7e8ba4;font-size:10px}
+.delete-mini{margin-left:auto;width:28px;height:28px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.025);color:#aeb8cb}
+@media(max-width:760px){.cloud-fab{right:14px;bottom:78px}.cloud-popover{right:14px;bottom:126px}.history-row{grid-template-columns:36px 1fr}.history-status,.history-location{grid-column:2;text-align:left}}
