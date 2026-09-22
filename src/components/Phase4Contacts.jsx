@@ -10,7 +10,9 @@ export default function Phase4Contacts({user,contacts,onAdd,onRemove}){
     e.preventDefault();
     if(!user){setMessage("Sign in from Settings to save contacts to the cloud.");return;}
     try{
-      await onAdd({name:name.trim(),phone:phone.trim(),relationship});
+      const normalizedPhone = phone.trim().replace(/[()\s-]/g, "");
+      if(!/^\\+[1-9][0-9]{7,14}$/.test(normalizedPhone)) throw new Error("Use E.164 format, e.g. +919876543210.");
+      await onAdd({name:name.trim(),phone:normalizedPhone,relationship});
       setName("");setPhone("");setMessage("Contact saved to your account.");
     }catch(error){setMessage(error.message||"Could not save contact.");}
   }
