@@ -1,0 +1,19 @@
+{
+  "name": "VoicePrint Emergency Safety",
+  "short_name": "VoicePrint",
+  "description": "Hands-free emergency safety system with SOS, GPS and trusted contacts.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#070b16",
+  "theme_color": "#070b16",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/voiceprint-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
