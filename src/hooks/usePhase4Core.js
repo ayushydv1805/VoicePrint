@@ -1,1 +1,196 @@
-import { useCallback, useEffect, useRef, useState } from "react";\nimport { getCurrentUser, signIn, signUp, signOut } from "../lib/auth";\nimport { api } from "../lib/apiAuth";\nimport { useClapDetector, useDeviceLocation } from "./useSafetySensors";\n\nfunction getDeviceId() {\n  const key = "voiceprint-device-id";\n  const existing = localStorage.getItem(key);\n  if (existing) return existing;\n  const value = globalThis.crypto?.randomUUID?.() || "vp-" + Date.now() + "-" + Math.random().toString(36).slice(2);\n  localStorage.setItem(key, value);\n  return value;\n}\n\nexport default function usePhase4Core() {\n  const [user, setUser] = useState(null);\n  const [ready, setReady] = useState(false);\n  const [contacts, setContacts] = useState([]);\n  const [history, setHistory] = useState([]);\n  const [active, setActive] = useState(() => localStorage.getItem("voiceprint-protection") !== "false");\n  const [open, setOpen] = useState(false);\n  const [event, setEvent] = useState(null);\n  const [source, setSource] = useState("manual");\n  const [error, setError] = useState("");\n  const [authMsg, setAuthMsg] = useState("");\n  const [sosWatch, setSosWatch] = useState(false);\n  const lastLocationSyncAt = useRef(0);\n  const flowLockRef = useRef(false);\n\n  const { listening, clapCount, micError, start: startMic, stop: stopMic } =\n    useClapDetector(() => startFlow("three-clap"));\n  const { location, locationError, watching, startWatching, stopWatching } = useDeviceLocation();\n\n  useEffect(() => {\n    getDeviceId();\n    getCurrentUser().then(setUser).catch(() => {}).finally(() => setReady(true));\n  }, []);\n\n  const refresh = useCallback(async () => {\n    if (!user) return;\n    const [contactsResponse, historyResponse] = await Promise.all([\n      api("/api/v1/contacts"),\n      api("/api/v1/history"),\n    ]);\n    setContacts((contactsResponse.contacts || []).map((item) => ({\n      id: item.id,\n      name: item.name,\n      phone: item.phone_e164,\n      relationship: item.relationship,\n    })));\n    setHistory(historyResponse.events || []);\n  }, [user]);\n\n  useEffect(() => {\n    if (user) refresh().catch((e) => setError(e.message));\n    else {\n      setContacts([]);\n      setHistory([]);\n    }\n  }, [user, refresh]);\n\n  useEffect(() => {\n    localStorage.setItem("voiceprint-protection", String(active));\n    if (!active) stopMic();\n  }, [active, stopMic]);\n\n  const startFlow = useCallback((src) => {\n    if (!active || open || flowLockRef.current) return false;\n\n    flowLockRef.current = true;\n    setSource(src);\n    setOpen(true);\n    setEvent(null);\n    setError("");\n    setSosWatch(true);\n    lastLocationSyncAt.current = 0;\n    stopMic();\n    startWatching();\n\n    if (!user) return true;\n\n    const idempotencyKey = globalThis.crypto?.randomUUID?.() ||\n      "vp-" + Date.now() + "-" + Math.random().toString(36).slice(2);\n\n    api("/api/v1/sos/events", {\n      method: "POST",\n      headers: { "Idempotency-Key": idempotencyKey },\n      body: JSON.stringify({\n        source: src,\n        location,\n        device_id: getDeviceId(),\n      }),\n    })\n      .then((response) => setEvent(response.event))\n      .catch((e) => setError(e.message));\n\n    return true;\n  }, [active, open, user, location, startWatching, stopMic]);\n\n  useEffect(() => {\n    if (!open || !event?.id || event.status === "cancelled" || event.status === "dispatched" ||\n        !location || Date.now() - lastLocationSyncAt.current < 5000) return;\n\n    lastLocationSyncAt.current = Date.now();\n    api("/api/v1/sos/events/" + encodeURIComponent(event.id) + "/location", {\n      method: "POST",\n      body: JSON.stringify({ location }),\n    })\n      .then((response) => setEvent(response.event))\n      .catch((e) => setError(e.message));\n  }, [open, event?.id, event?.status, location]);\n\n  const closeFlow = useCallback(async () => {\n    if (event?.id && event.status !== "dispatched" && event.status !== "cancelled") {\n      try {\n        const response = await api("/api/v1/sos/events/" + encodeURIComponent(event.id) + "/cancel", {\n          method: "POST",\n        });\n        setEvent(response.event);\n        await refresh();\n      } catch (e) {\n        setError(e.message);\n      }\n    }\n    if (sosWatch) stopWatching();\n    setSosWatch(false);\n    setOpen(false);\n    flowLockRef.current = false;\n  }, [event, sosWatch, stopWatching, refresh]);\n\n  const finish = useCallback(async () => {\n    if (!event?.id || event.status === "dispatched" || event.status === "cancelled") return;\n    try {\n      const response = await api("/api/v1/sos/events/" + encodeURIComponent(event.id) + "/dispatch", {\n        method: "POST",\n      });\n      setEvent(response.event);\n      await refresh();\n    } catch (e) {\n      setError(e.message);\n    }\n  }, [event, refresh]);\n\n  const add = useCallback(async (contact) => {\n    if (!user) throw new Error("Sign in from Settings first.");\n    const response = await api("/api/v1/contacts", {\n      method: "POST",\n      body: JSON.stringify({\n        name: contact.name,\n        phone_e164: contact.phone,\n        relationship: contact.relationship,\n      }),\n    });\n    const item = response.contact;\n    setContacts((value) => [...value, {\n      id: item.id,\n      name: item.name,\n      phone: item.phone_e164,\n      relationship: item.relationship,\n    }]);\n  }, [user]);\n\n  const remove = useCallback(async (id) => {\n    await api("/api/v1/contacts/" + encodeURIComponent(id), { method: "DELETE" });\n    setContacts((value) => value.filter((contact) => contact.id !== id));\n  }, []);\n\n  const auth = useCallback(async (mode, email, password) => {\n    try {\n      const response = mode === "signup" ? await signUp(email, password) : await signIn(email, password);\n      if (mode === "signup" && !response?.access_token) {\n        setAuthMsg("Account created. Confirm your email if required, then sign in.");\n        return;\n      }\n      setUser(await getCurrentUser());\n      setAuthMsg("Signed in successfully.");\n    } catch (e) {\n      setAuthMsg(e.message);\n    }\n  }, []);\n\n  const logout = useCallback(async () => {\n    await signOut();\n    setUser(null);\n    setContacts([]);\n    setHistory([]);\n    setAuthMsg("Signed out.");\n  }, []);\n\n  return {\n    ready, user, contacts, history, active, setActive, open, event, source, error, setError,\n    authMsg, auth, logout, listening, clapCount, micError, location, locationError, watching,\n    sosWatch, startFlow, closeFlow, finish, startMic, stopMic, startWatching, stopWatching,\n    add, remove, refresh,\n  };\n}\n
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getCurrentUser, signIn, signUp, signOut } from "../lib/auth";
+import { api } from "../lib/apiAuth";
+import { useClapDetector, useDeviceLocation } from "./useSafetySensors";
+
+function getDeviceId() {
+  const key = "voiceprint-device-id";
+  const existing = localStorage.getItem(key);
+  if (existing) return existing;
+  const value = globalThis.crypto?.randomUUID?.() || "vp-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  localStorage.setItem(key, value);
+  return value;
+}
+
+export default function usePhase4Core() {
+  const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(false);
+  const [contacts, setContacts] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [active, setActive] = useState(() => localStorage.getItem("voiceprint-protection") !== "false");
+  const [open, setOpen] = useState(false);
+  const [event, setEvent] = useState(null);
+  const [source, setSource] = useState("manual");
+  const [error, setError] = useState("");
+  const [authMsg, setAuthMsg] = useState("");
+  const [sosWatch, setSosWatch] = useState(false);
+  const lastLocationSyncAt = useRef(0);
+  const flowLockRef = useRef(false);
+
+  const { listening, clapCount, micError, start: startMic, stop: stopMic } =
+    useClapDetector(() => startFlow("three-clap"));
+  const { location, locationError, watching, startWatching, stopWatching } = useDeviceLocation();
+
+  useEffect(() => {
+    getDeviceId();
+    getCurrentUser().then(setUser).catch(() => {}).finally(() => setReady(true));
+  }, []);
+
+  const refresh = useCallback(async () => {
+    if (!user) return;
+    const [contactsResponse, historyResponse] = await Promise.all([
+      api("/api/v1/contacts"),
+      api("/api/v1/history"),
+    ]);
+    setContacts((contactsResponse.contacts || []).map((item) => ({
+      id: item.id,
+      name: item.name,
+      phone: item.phone_e164,
+      relationship: item.relationship,
+    })));
+    setHistory(historyResponse.events || []);
+  }, [user]);
+
+  useEffect(() => {
+    if (user) refresh().catch((e) => setError(e.message));
+    else {
+      setContacts([]);
+      setHistory([]);
+    }
+  }, [user, refresh]);
+
+  useEffect(() => {
+    localStorage.setItem("voiceprint-protection", String(active));
+    if (!active) stopMic();
+  }, [active, stopMic]);
+
+  const startFlow = useCallback((src) => {
+    if (!active || open || flowLockRef.current) return false;
+
+    flowLockRef.current = true;
+    setSource(src);
+    setOpen(true);
+    setEvent(null);
+    setError("");
+    setSosWatch(true);
+    lastLocationSyncAt.current = 0;
+    stopMic();
+    startWatching();
+
+    if (!user) return true;
+
+    const idempotencyKey = globalThis.crypto?.randomUUID?.() ||
+      "vp-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+
+    api("/api/v1/sos/events", {
+      method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
+      body: JSON.stringify({
+        source: src,
+        location,
+        device_id: getDeviceId(),
+      }),
+    })
+      .then((response) => setEvent(response.event))
+      .catch((e) => setError(e.message));
+
+    return true;
+  }, [active, open, user, location, startWatching, stopMic]);
+
+  useEffect(() => {
+    if (!open || !event?.id || event.status === "cancelled" || event.status === "dispatched" ||
+        !location || Date.now() - lastLocationSyncAt.current < 5000) return;
+
+    lastLocationSyncAt.current = Date.now();
+    api("/api/v1/sos/events/" + encodeURIComponent(event.id) + "/location", {
+      method: "POST",
+      body: JSON.stringify({ location }),
+    })
+      .then((response) => setEvent(response.event))
+      .catch((e) => setError(e.message));
+  }, [open, event?.id, event?.status, location]);
+
+  const closeFlow = useCallback(async () => {
+    if (event?.id && event.status !== "dispatched" && event.status !== "cancelled") {
+      try {
+        const response = await api("/api/v1/sos/events/" + encodeURIComponent(event.id) + "/cancel", {
+          method: "POST",
+        });
+        setEvent(response.event);
+        await refresh();
+      } catch (e) {
+        setError(e.message);
+      }
+    }
+    if (sosWatch) stopWatching();
+    setSosWatch(false);
+    setOpen(false);
+    flowLockRef.current = false;
+  }, [event, sosWatch, stopWatching, refresh]);
+
+  const finish = useCallback(async () => {
+    if (!event?.id || event.status === "dispatched" || event.status === "cancelled") return;
+    try {
+      const response = await api("/api/v1/sos/events/" + encodeURIComponent(event.id) + "/dispatch", {
+        method: "POST",
+      });
+      setEvent(response.event);
+      await refresh();
+    } catch (e) {
+      setError(e.message);
+    }
+  }, [event, refresh]);
+
+  const add = useCallback(async (contact) => {
+    if (!user) throw new Error("Sign in from Settings first.");
+    const response = await api("/api/v1/contacts", {
+      method: "POST",
+      body: JSON.stringify({
+        name: contact.name,
+        phone_e164: contact.phone,
+        relationship: contact.relationship,
+      }),
+    });
+    const item = response.contact;
+    setContacts((value) => [...value, {
+      id: item.id,
+      name: item.name,
+      phone: item.phone_e164,
+      relationship: item.relationship,
+    }]);
+  }, [user]);
+
+  const remove = useCallback(async (id) => {
+    await api("/api/v1/contacts/" + encodeURIComponent(id), { method: "DELETE" });
+    setContacts((value) => value.filter((contact) => contact.id !== id));
+  }, []);
+
+  const auth = useCallback(async (mode, email, password) => {
+    try {
+      const response = mode === "signup" ? await signUp(email, password) : await signIn(email, password);
+      if (mode === "signup" && !response?.access_token) {
+        setAuthMsg("Account created. Confirm your email if required, then sign in.");
+        return;
+      }
+      setUser(await getCurrentUser());
+      setAuthMsg("Signed in successfully.");
+    } catch (e) {
+      setAuthMsg(e.message);
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    await signOut();
+    setUser(null);
+    setContacts([]);
+    setHistory([]);
+    setAuthMsg("Signed out.");
+  }, []);
+
+  return {
+    ready, user, contacts, history, active, setActive, open, event, source, error, setError,
+    authMsg, auth, logout, listening, clapCount, micError, location, locationError, watching,
+    sosWatch, startFlow, closeFlow, finish, startMic, stopMic, startWatching, stopWatching,
+    add, remove, refresh,
+  };
+}
