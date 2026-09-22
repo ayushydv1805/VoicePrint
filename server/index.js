@@ -12,6 +12,7 @@ const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "";
 const ALERT_COOLDOWN_MS = Math.max(0, Number(process.env.ALERT_COOLDOWN_SECONDS || 30) * 1000);
 const LOCATION_UPDATE_MIN_MS = Math.max(1000, Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000);
+const CONFIRMATION_WINDOW_MS = Math.max(0, Number(process.env.CONFIRMATION_WINDOW_SECONDS || 10) * 1000);
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
