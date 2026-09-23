@@ -883,3 +883,5 @@ Until a license is added, the repository should not be assumed to grant broad re
 VoicePrint is built to **assist** a person during a potential emergency. It should complement—not replace—device emergency features, trusted people, local emergency procedures, or professional emergency services.
 
 For real emergencies, use the appropriate emergency facilities available on the device and in the user's location.
+
+<!-- Vercel deployment retry: 2026-09-23 -->
