@@ -107,6 +107,12 @@ The server reports `securityRlsEnforced` from the `SUPABASE_RLS_ENFORCED` enviro
 - The Vercel frontend applies the browser-facing security header baseline through vercel.json.
 - PostgreSQL RLS remains a separate Supabase deployment control and is not enabled by this Node server.
 
+## Phase 9 incident center
+
+The authenticated event-detail endpoint now powers an incident audit view in the web application. Users can inspect a single SOS event, trusted-contact delivery records and saved location snapshots, then export those records as a personal JSON report from the browser.
+
+The backend `/api/v1/status` endpoint reports the incident-audit, location-history and delivery-audit capabilities for deployment verification.
+
 ## SMS delivery
 
 Twilio is used only when all required server variables are configured.
