@@ -330,6 +330,7 @@ erDiagram
         text delivery_summary
         timestamptz dispatched_at
         timestamptz cancelled_at
+        text idempotency_key
         timestamptz created_at
         timestamptz updated_at
     }
@@ -514,7 +515,31 @@ GET /api/v1/sos/events/:id
 
 ### Live reliability diagnostics
 The Settings area now includes a Phase 6 service-readiness panel showing API reachability, browser network state, confirmation-window settings, location-update interval, and key backend capabilities.
----
+
+## Phase 7 Safety & Privacy Layer
+
+Phase 7 adds operational safeguards around the existing SOS workflow without pretending that browser-based safety is a guaranteed emergency service.
+
+### Race-safe SOS lifecycle
+The client now treats each SOS creation request as its own asynchronous flow. Cancelling one flow cannot accidentally cancel a later flow, and a request that finishes after the modal closes is still cancelled on the server.
+
+### Browser privacy controls
+Settings includes a local-data control that signs the user out and removes VoicePrint browser state. It does not delete cloud contacts or SOS history.
+
+### History export
+Authenticated users can export the history currently loaded in the browser as a JSON file for personal record-keeping.
+
+### Crash recovery
+The application entrypoint includes a React error boundary that provides a clear restart screen if an unexpected rendering error reaches the app shell.
+
+### PWA release cache
+The service-worker cache namespace is versioned with the release so a new deployment does not intentionally reuse the previous shell namespace.
+
+### Automated backend regression tests
+Server input validation is extracted into a dedicated module and covered by Node's built-in test runner. CI now installs and tests both the frontend and backend.
+
+### RLS transparency
+The reliability panel surfaces whether the backend is configured as RLS-enforced. The current project remains RLS-disabled and should not be treated as production-safe for sensitive data until the reviewed RLS policies are applied and verified.---
 
 # Phase 5 PWA & Device Features
 
@@ -631,6 +656,8 @@ The application already scopes backend queries by authenticated user ID, but app
 
 Test:
 - repeated button presses,
+- cancel-before-event race,
+- rapid re-trigger after cancellation,
 - duplicate requests with the same idempotency key,
 - expired authentication,
 - denied microphone permission,
@@ -712,6 +739,7 @@ Before real-world use, verify:
 | Phase 4 | Authentication, cloud contacts, persistent history, SOS events and controlled dispatch flow |
 | Phase 5 | Security/performance hardening, PWA foundation, offline awareness, notifications, Wake Lock, quick emergency actions and database constraints |
 | Phase 6 | Reliability hardening, durable SOS idempotency, server-side location throttling, request tracing, event-detail inspection and live API diagnostics |
+| Phase 7 | Race-safe SOS lifecycle, privacy controls, history export, crash recovery, PWA cache versioning and automated backend regression tests |
 
 ---
 
