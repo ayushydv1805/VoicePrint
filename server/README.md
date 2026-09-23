@@ -2,7 +2,7 @@
 
 The VoicePrint API is the Node.js/Express backend used by the React safety application.
 
-## Phase 7 reliability and safety responsibilities
+## Phase 8 production hardening responsibilities
 
 - authenticate requests with Supabase Auth bearer tokens
 - keep trusted contacts and SOS records scoped to the authenticated user
@@ -75,7 +75,7 @@ POST   /api/v1/sos/events/:id/dispatch
 POST   /api/v1/sos/events/:id/cancel
 ```
 
-## Phase 7 behavior
+## Phase 8 behavior
 
 ### Race-safe lifecycle
 The web client tracks each SOS request as an independent asynchronous flow. If the user closes an SOS flow before event creation completes, the resulting event is cancelled as soon as it is created. A later SOS flow cannot accidentally clear the previous flow's cancellation state.
