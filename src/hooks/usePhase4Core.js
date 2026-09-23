@@ -26,6 +26,7 @@ export default function usePhase4Core() {
   const [sosWatch, setSosWatch] = useState(false);
   const lastLocationSyncAt = useRef(0);
   const flowLockRef = useRef(false);
+  const cancelRequestedRef = useRef(false);
 
   const { listening, clapCount, micError, start: startMic, stop: stopMic } =
     useClapDetector(() => startFlow("three-clap"));
@@ -68,6 +69,7 @@ export default function usePhase4Core() {
     if (!active || open || flowLockRef.current) return false;
 
     flowLockRef.current = true;
+    cancelRequestedRef.current = false;
     setSource(src);
     setOpen(true);
     setEvent(null);
@@ -91,8 +93,25 @@ export default function usePhase4Core() {
         device_id: getDeviceId(),
       }),
     })
-      .then((response) => setEvent(response.event))
-      .catch((e) => setError(e.message));
+      .then(async (response) => {
+        setEvent(response.event);
+
+        if (cancelRequestedRef.current && response.event?.id) {
+          try {
+            const cancelled = await api(
+              "/api/v1/sos/events/" + encodeURIComponent(response.event.id) + "/cancel",
+              { method: "POST" }
+            );
+            setEvent(cancelled.event);
+            await refresh();
+          } catch (e) {
+            setError(e.message);
+          }
+        }
+      })
+      .catch((e) => {
+        if (!cancelRequestedRef.current) setError(e.message);
+      });
 
     return true;
   }, [active, open, user, location, startWatching, stopMic]);
@@ -111,6 +130,8 @@ export default function usePhase4Core() {
   }, [open, event?.id, event?.status, location]);
 
   const closeFlow = useCallback(async () => {
+    cancelRequestedRef.current = true;
+
     if (event?.id && event.status !== "dispatched" && event.status !== "cancelled") {
       try {
         const response = await api("/api/v1/sos/events/" + encodeURIComponent(event.id) + "/cancel", {
@@ -135,11 +156,13 @@ export default function usePhase4Core() {
         method: "POST",
       });
       setEvent(response.event);
+      stopWatching();
+      setSosWatch(false);
       await refresh();
     } catch (e) {
       setError(e.message);
     }
-  }, [event, refresh]);
+  }, [event, refresh, stopWatching]);
 
   const add = useCallback(async (contact) => {
     if (!user) throw new Error("Sign in from Settings first.");
