@@ -36,3 +36,7 @@ jobs:
         run: |
           node --check server/index.js
           node --check server/index-phase4.js
+
+      - name: Verify Phase 9 release
+        run: npm run verify:release
+\n
