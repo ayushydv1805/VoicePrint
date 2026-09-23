@@ -681,6 +681,11 @@ Test:
 
 # Deployment
 
+## Deployment parity
+
+The `main` branch contains the cumulative Phase 6 + Phase 7 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 7 includes the Phase 6 reliability layer; they are deployed together as one cumulative build.
+
+
 ## Frontend — Vercel
 
 The frontend is designed for Vercel deployment from the `main` branch.
