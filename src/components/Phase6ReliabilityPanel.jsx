@@ -7,6 +7,7 @@ export default function Phase6ReliabilityPanel({ status, loading, error, onRefre
     ["Live location", features.liveLocation],
     ["Durable idempotency", features.durableIdempotency],
     ["Server location throttle", features.serverSideLocationThrottle],
+    ["Database RLS", features.securityRlsEnforced],
   ];
 
   return (
@@ -39,7 +40,7 @@ export default function Phase6ReliabilityPanel({ status, loading, error, onRefre
           {checks.map(([label, enabled]) => (
             <div className="reliability-check" key={label}>
               <span className={enabled ? "check done" : "check"}>{enabled ? "✓" : "!"}</span>
-              <div><strong>{label}</strong><small>{enabled ? "Enabled" : "Unavailable"}</small></div>
+              <div><strong>{label}</strong><small>{enabled ? "Enabled" : label === "Database RLS" ? "Action required" : "Unavailable"}</small></div>
             </div>
           ))}
         </div>
