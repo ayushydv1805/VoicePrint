@@ -506,7 +506,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "8",
+    phase: "9",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -527,6 +527,9 @@ app.get("/api/v1/status", (req, res) => {
       securityRlsEnforced: SUPABASE_RLS_ENFORCED,
       apiNoStore: true,
       securityHeaders: true,
+      incidentAudit: true,
+      locationHistory: true,
+      deliveryAudit: true,
     },
   });
 });
