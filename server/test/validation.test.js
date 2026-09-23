@@ -26,7 +26,7 @@ test("validates location bounds and normalizes accuracy", () => {
   assert.equal(result.latitude, 30.7046);
   assert.equal(result.longitude, 76.7179);
   assert.equal(result.accuracy_m, 12.5);
-  assert.match(result.captured_at, /^20\\d{2}-\\d{2}-\\d{2}T/);
+  assert.match(result.captured_at, /^20\d{2}-\d{2}-\d{2}T/);
 });
 
 test("rejects invalid location coordinates", () => {
