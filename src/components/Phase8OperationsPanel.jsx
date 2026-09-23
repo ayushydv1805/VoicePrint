@@ -8,6 +8,7 @@ export default function Phase8OperationsPanel({ report, loading, error, onCheck 
     ["Content security policy", frontend.csp],
     ["Transport security", frontend.hsts],
     ["API reachable", api.reachable],
+    ["API release parity", api.releaseParity],
     ["API no-store", api.noStore],
     ["API request tracing", api.requestTracing],
   ];
