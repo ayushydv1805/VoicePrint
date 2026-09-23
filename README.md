@@ -178,7 +178,8 @@ VoicePrint/
 │   │   ├── Phase7ErrorBoundary.jsx
 │   │   ├── Phase7PrivacyPanel.jsx
 │   │   ├── Phase8OperationsPanel.jsx
-│   │   └── Phase9IncidentPanel.jsx
+│   │   ├── Phase9IncidentPanel.jsx
+│   │   └── Phase10ReadinessPanel.jsx
 │   │
 │   ├── hooks/
 │   │   ├── useSafetySensors.js
@@ -186,7 +187,8 @@ VoicePrint/
 │   │   ├── usePhase5Enhancements.js
 │   │   ├── usePhase6Status.js
 │   │   ├── usePhase8DeploymentStatus.js
-│   │   └── usePhase9Incident.js
+│   │   ├── usePhase9Incident.js
+│   │   └── usePhase10Readiness.js
 │   │
 │   ├── lib/
 │   │   ├── apiAuth.js
@@ -215,7 +217,8 @@ VoicePrint/
 ├── index.html
 ├── vercel.json
 ├── scripts/
-│   └── verify-phase9.mjs
+│   ├── verify-phase9.mjs
+│   └── verify-phase10.mjs
 ├── package.json
 └── README.md
 ```
@@ -296,7 +299,7 @@ CORS_ORIGINS=https://your-vercel-domain.example
 ALERT_COOLDOWN_SECONDS=30
 LOCATION_UPDATE_MIN_SECONDS=5
 CONFIRMATION_WINDOW_SECONDS=10
-VOICEPRINT_RELEASE=phase-8
+VOICEPRINT_RELEASE=phase-10
 
 # Optional SMS delivery. Keep these server-side secrets private.
 TWILIO_ACCOUNT_SID=
@@ -557,7 +560,7 @@ The service-worker cache namespace is versioned with the release so a new deploy
 Server input validation is extracted into a dedicated module and covered by Node's built-in test runner. CI now installs and tests both the frontend and backend.
 
 ### RLS transparency
-The reliability panel surfaces whether the backend is configured as RLS-enforced. The current project remains RLS-disabled and should not be treated as production-safe for sensitive data until the reviewed RLS policies are applied and verified.---
+The reliability panel surfaces whether the backend is configured as RLS-enforced. Phase 10 activates the reviewed RLS policy baseline in the Supabase project and exposes the enforced state through the backend readiness checks.---
 
 
 # Phase 9 Incident Center
@@ -574,9 +577,17 @@ The incident center can refresh the current event from the backend, copy the lat
 
 The export is created in the browser from data already returned for the authenticated user.
 
+## Phase 10 Safety Pre-flight Readiness
+
+Phase 10 adds a release-aware readiness center in Settings. It checks the deployed browser context, microphone and location capability, notification state, network state, PWA support, backend reachability, release parity, request tracing, database RLS enforcement, trusted-contact readiness, and optional SMS provider configuration.
+
+The readiness check is diagnostic only. It does not send an SOS, contact a responder, or modify trusted-contact data.
+
+The frontend and backend release are version 0.10.0 and the PWA shell cache namespace is voiceprint-shell-v10.
+
 ## Production status
 
-The backend status endpoint now reports Phase 9 incident-audit capabilities, while the frontend release uses version 0.9.0 and the PWA shell cache namespace is voiceprint-shell-v9.
+The backend status endpoint reports Phase 10 readiness support, including whether database RLS is enforced, while the frontend release exposes the same information through the Settings readiness center.
 
 ## Automated release verification
 
@@ -749,7 +760,7 @@ Test:
 
 ## Deployment parity
 
-The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
+The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
 
 
 ## Frontend — Vercel
@@ -820,6 +831,7 @@ Before real-world use, verify:
 | Phase 7 | Race-safe SOS lifecycle, privacy controls, history export, crash recovery, PWA cache versioning and automated backend regression tests |
 | Phase 8 | Vercel security headers, API cache hardening, live deployment verification, release metadata and reviewed RLS activation baseline |
 | Phase 9 | Incident detail center, delivery audit, location snapshots, map-link sharing, incident JSON export and release verification |
+| Phase 10 | Safety pre-flight readiness center, database RLS activation, release markers and automated readiness verification |
 
 ---
 

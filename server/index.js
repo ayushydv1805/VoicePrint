@@ -21,7 +21,7 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
 const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
-const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-9";
+const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-10";
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
   Number(process.env.CONFIRMATION_WINDOW_SECONDS || 10) * 1000
@@ -506,7 +506,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "9",
+    phase: "10",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -530,6 +530,7 @@ app.get("/api/v1/status", (req, res) => {
       incidentAudit: true,
       locationHistory: true,
       deliveryAudit: true,
+      readiness: true,
     },
   });
 });

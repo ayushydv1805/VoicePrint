@@ -15,6 +15,8 @@ import Phase8OperationsPanel from "./components/Phase8OperationsPanel";
 import usePhase8DeploymentStatus from "./hooks/usePhase8DeploymentStatus";
 import usePhase9Incident from "./hooks/usePhase9Incident";
 import Phase9IncidentPanel from "./components/Phase9IncidentPanel";
+import usePhase10Readiness from "./hooks/usePhase10Readiness";
+import Phase10ReadinessPanel from "./components/Phase10ReadinessPanel";
 
 const tabs = [
   ["home", "Home", "⌂"],
@@ -49,6 +51,7 @@ export default function Phase8App() {
     listening: c.listening,
     sosActive: c.open,
   });
+  const p10 = usePhase10Readiness({ user: c.user, contacts: c.contacts, online: p5.online });
 
   useEffect(() => {
     if (!c.open || !c.event?.id || !c.user) return;
@@ -206,6 +209,12 @@ export default function Phase8App() {
         error={p8.error}
         onCheck={p8.check}
       />
+      <Phase10ReadinessPanel
+        report={p10.report}
+        loading={p10.loading}
+        error={p10.error}
+        onCheck={p10.check}
+      />
     </div>
   );
 
@@ -264,7 +273,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.9 · Phase 9</span>
+            <span className="version">VoicePrint v0.10 · Phase 10</span>
           </div>
         </aside>
 
