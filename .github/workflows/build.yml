@@ -18,8 +18,6 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: npm install
-      - name: Install dependencies
-        run: npm install
       - name: Build frontend
         run: npm run build
       - name: Install backend dependencies
