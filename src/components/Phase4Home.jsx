@@ -1,7 +1,7 @@
 export default function Phase4Home({user,active,listening,clapCount,contacts,location,watching,history,onEmergency,onMic,onLocation,onNav}){
   return <div className="page">
     <section className="hero"><div>
-      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 7</div>
+      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 8</div>
       <h1>When you can't<br/><span>reach your phone.</span></h1>
       <p className="hero-copy">Signed-in cloud storage keeps trusted contacts and event history available across sessions. Clap detection and GPS still run in the browser.</p>
       <div className="hero-actions"><button className="primary-btn" onClick={onEmergency}>✦ Test SOS</button><button className={listening?"secondary-btn listening-btn":"secondary-btn"} onClick={onMic}><span className="mic-live-dot"/>{listening?`Listening · ${clapCount}/3`:"Start clap detection"}</button></div>
@@ -15,7 +15,7 @@ export default function Phase4Home({user,active,listening,clapCount,contacts,loc
     </section>
 
     <section className="dashboard-grid"><div className="panel map-panel"><div className="panel-head"><div><span className="panel-kicker">LOCATION</span><h2>Device location</h2></div></div><Map location={location}/></div>
-      <div className="panel checklist"><div className="panel-head"><div><span className="panel-kicker">PHASE 7</span><h2>Protection checklist</h2></div></div><Row done={listening} text="Clap detection"/><Row done={!!location} text="Location permission"/><Row done={contacts.length>0} text="Trusted contact"/><Row done={!!user} text="Cloud account"/><Row done={history.length>0} text="Persistent history"/></div></section>
+      <div className="panel checklist"><div className="panel-head"><div><span className="panel-kicker">PHASE 8</span><h2>Protection checklist</h2></div></div><Row done={listening} text="Clap detection"/><Row done={!!location} text="Location permission"/><Row done={contacts.length>0} text="Trusted contact"/><Row done={!!user} text="Cloud account"/><Row done={history.length>0} text="Persistent history"/></div></section>
     {!user&&<div className="phase-note"><span>04</span><div><strong>Cloud features are locked until sign in.</strong><br/>Local detection and GPS remain available for testing.</div></div>}
   </div>;
 }
