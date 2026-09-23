@@ -197,6 +197,7 @@ VoicePrint/
 │   ├── phase5-entry.jsx
 │   ├── phase6-entry.jsx
 │   ├── phase7-entry.jsx
+│   ├── phase8-entry.jsx
 │   └── index.css
 │
 ├── supabase/
@@ -683,7 +684,7 @@ Test:
 
 ## Deployment parity
 
-The `main` branch contains the cumulative Phase 6 + Phase 7 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 7 includes the Phase 6 reliability layer; they are deployed together as one cumulative build.
+The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
 
 
 ## Frontend — Vercel
@@ -752,6 +753,7 @@ Before real-world use, verify:
 | Phase 5 | Security/performance hardening, PWA foundation, offline awareness, notifications, Wake Lock, quick emergency actions and database constraints |
 | Phase 6 | Reliability hardening, durable SOS idempotency, server-side location throttling, request tracing, event-detail inspection and live API diagnostics |
 | Phase 7 | Race-safe SOS lifecycle, privacy controls, history export, crash recovery, PWA cache versioning and automated backend regression tests |
+| Phase 8 | Vercel security headers, API cache hardening, live deployment verification, release metadata and reviewed RLS activation baseline |
 
 ---
 
