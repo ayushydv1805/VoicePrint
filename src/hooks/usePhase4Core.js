@@ -26,7 +26,7 @@ export default function usePhase4Core() {
   const [sosWatch, setSosWatch] = useState(false);
   const lastLocationSyncAt = useRef(0);
   const flowLockRef = useRef(false);
-  const cancelRequestedRef = useRef(false);
+  const cancelRequestedRef = useRef(null);
 
   const { listening, clapCount, micError, start: startMic, stop: stopMic } =
     useClapDetector(() => startFlow("three-clap"));
@@ -69,7 +69,8 @@ export default function usePhase4Core() {
     if (!active || open || flowLockRef.current) return false;
 
     flowLockRef.current = true;
-    cancelRequestedRef.current = false;
+    const flowToken = { cancelled: false };
+    cancelRequestedRef.current = flowToken;
     setSource(src);
     setOpen(true);
     setEvent(null);
@@ -96,7 +97,7 @@ export default function usePhase4Core() {
       .then(async (response) => {
         setEvent(response.event);
 
-        if (cancelRequestedRef.current && response.event?.id) {
+        if (flowToken.cancelled && response.event?.id) {
           try {
             const cancelled = await api(
               "/api/v1/sos/events/" + encodeURIComponent(response.event.id) + "/cancel",
@@ -110,11 +111,11 @@ export default function usePhase4Core() {
         }
       })
       .catch((e) => {
-        if (!cancelRequestedRef.current) setError(e.message);
+        if (!flowToken.cancelled) setError(e.message);
       });
 
     return true;
-  }, [active, open, user, location, startWatching, stopMic]);
+  }, [active, open, user, location, startWatching, stopMic, refresh]);
 
   useEffect(() => {
     if (!open || !event?.id || event.status === "cancelled" || event.status === "dispatched" ||
@@ -130,7 +131,7 @@ export default function usePhase4Core() {
   }, [open, event?.id, event?.status, location]);
 
   const closeFlow = useCallback(async () => {
-    cancelRequestedRef.current = true;
+    if (cancelRequestedRef.current) cancelRequestedRef.current.cancelled = true;
 
     if (event?.id && event.status !== "dispatched" && event.status !== "cancelled") {
       try {
@@ -147,6 +148,7 @@ export default function usePhase4Core() {
     setSosWatch(false);
     setOpen(false);
     flowLockRef.current = false;
+    cancelRequestedRef.current = null;
   }, [event, sosWatch, stopWatching, refresh]);
 
   const finish = useCallback(async () => {
