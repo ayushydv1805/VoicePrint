@@ -2,22 +2,19 @@
 
 The VoicePrint API is the Node.js/Express backend used by the React safety application.
 
-## Responsibilities
+## Phase 7 reliability and safety responsibilities
 
 - authenticate requests with Supabase Auth bearer tokens
-- keep trusted contacts scoped to the authenticated user
+- keep trusted contacts and SOS records scoped to the authenticated user
 - create and persist SOS events
-- snapshot and update live location
-- enforce SOS cooldowns
-- enforce the 10-second server-side confirmation gate
-- protect SOS creation with durable per-user idempotency keys
+- enforce SOS cooldowns and the 10-second confirmation gate
+- protect SOS creation with durable idempotency keys
 - throttle server-side location updates
 - process optional Twilio trusted-contact SMS delivery
-- expose authenticated SOS event details and delivery/location records
-- expose health and service-readiness endpoints
-- attach request IDs to responses and operational logs
-- apply Helmet, CORS and API/SOS rate limiting
-- validate phone numbers, coordinates and event state transitions
+- expose authenticated SOS event details, deliveries and location snapshots
+- expose request IDs for troubleshooting
+- validate safety-sensitive input at the API and database layers
+- expose a configurable RLS posture flag for the client readiness panel
 
 ## Run locally
 
@@ -27,7 +24,11 @@ npm install
 npm run dev
 ```
 
-The default API port is `5000`.
+Run the regression tests:
+
+```bash
+npm test
+```
 
 ## Environment
 
@@ -40,13 +41,14 @@ CORS_ORIGINS=https://your-vercel-domain.example
 ALERT_COOLDOWN_SECONDS=30
 LOCATION_UPDATE_MIN_SECONDS=5
 CONFIRMATION_WINDOW_SECONDS=10
+SUPABASE_RLS_ENFORCED=false
 
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=
 ```
 
-Twilio values are optional and must remain server-side secrets.
+`SUPABASE_RLS_ENFORCED` is an application status flag. It does not enable PostgreSQL RLS by itself.
 
 ## Endpoints
 
@@ -73,56 +75,47 @@ POST   /api/v1/sos/events/:id/dispatch
 POST   /api/v1/sos/events/:id/cancel
 ```
 
-## Reliability behavior
+## Phase 7 behavior
 
-### Idempotency
+### Race-safe lifecycle
+The web client tracks each SOS request as an independent asynchronous flow. If the user closes an SOS flow before event creation completes, the resulting event is cancelled as soon as it is created. A later SOS flow cannot accidentally clear the previous flow's cancellation state.
 
-Every SOS creation request requires an `Idempotency-Key` header between 8 and 128 characters.
-
-The key is stored on `sos_events` and protected by a unique index over `(user_id, idempotency_key)`. A repeated request can return the original event instead of creating another SOS.
+### Durable idempotency
+Every SOS creation request requires an `Idempotency-Key` between 8 and 128 characters. The key is stored on `sos_events` and protected by a per-user unique index.
 
 ### Cooldown
-
-The server reads the most recent SOS event from the database before creating another one. This keeps the cooldown behavior consistent across server restarts.
+The server reads the latest persisted SOS event before creating another event. Cooldown behavior therefore survives process restarts.
 
 ### Location throttling
-
-The browser may send location updates during an active SOS, but the server enforces `LOCATION_UPDATE_MIN_SECONDS` using the persisted event timestamp.
+The browser can send live coordinates during an active pending event, while the server also enforces the configured minimum interval.
 
 ### Confirmation gate
-
-The backend calculates the confirmation window from the stored event creation time. Calling `/dispatch` before the gate expires returns HTTP `409` with `Retry-After`.
+The dispatch endpoint calculates remaining confirmation time from the stored event creation time. Early dispatch attempts return HTTP `409` and `Retry-After`.
 
 ### Request tracing
+Every response exposes `X-Request-ID`; the same value is included in JSON and structured error logs.
 
-Every response includes `X-Request-ID`. The same identifier is included in JSON responses and structured server error logs.
+### Security posture
+The server reports `securityRlsEnforced` from the `SUPABASE_RLS_ENFORCED` environment flag. This is a reporting mechanism only. PostgreSQL RLS must still be enabled and verified separately.
 
 ## SMS delivery
 
 Twilio is used only when all required server variables are configured.
 
-The SMS contains:
-- VoicePrint SOS trigger source
-- latest known coordinates when available
-- a Google Maps link
-- a notice that trusted-contact alerting is not public emergency dispatch
-
-Without Twilio credentials, the event is still persisted and the delivery state reports that the provider is not configured.
+Without Twilio credentials, VoicePrint records that the provider is not configured instead of pretending an SMS was sent.
 
 ## Security boundary
 
-The backend filters every protected database query by the authenticated Supabase user ID.
+The backend filters protected database queries by the authenticated Supabase user ID. Application-level ownership checks are not a substitute for PostgreSQL Row Level Security.
 
-This application-level ownership check is not a substitute for PostgreSQL Row Level Security. RLS should be enabled and tested before real sensitive safety data is used in production.
-
-The backend never requires Twilio secrets in browser code.
+Twilio secrets remain server-side.
 
 ## Deployment
 
-The Render service can start the backend with:
+Preferred Render start command:
 
 ```text
 node server/index.js
 ```
 
-An older Render configuration may still reference `server/index-phase4.js`; that entrypoint is intentionally kept aligned with the Phase 6 backend so it cannot silently deploy stale behavior.
+The older `server/index-phase4.js` entrypoint is kept synchronized with the same Phase 7 implementation for compatibility with an existing Render service configuration.
