@@ -177,14 +177,16 @@ VoicePrint/
 │   │   ├── Phase6ReliabilityPanel.jsx
 │   │   ├── Phase7ErrorBoundary.jsx
 │   │   ├── Phase7PrivacyPanel.jsx
-│   │   └── Phase8OperationsPanel.jsx
+│   │   ├── Phase8OperationsPanel.jsx
+│   │   └── Phase9IncidentPanel.jsx
 │   │
 │   ├── hooks/
 │   │   ├── useSafetySensors.js
 │   │   ├── usePhase4Core.js
 │   │   ├── usePhase5Enhancements.js
 │   │   ├── usePhase6Status.js
-│   │   └── usePhase8DeploymentStatus.js
+│   │   ├── usePhase8DeploymentStatus.js
+│   │   └── usePhase9Incident.js
 │   │
 │   ├── lib/
 │   │   ├── apiAuth.js
@@ -212,6 +214,8 @@ VoicePrint/
 │
 ├── index.html
 ├── vercel.json
+├── scripts/
+│   └── verify-phase9.mjs
 ├── package.json
 └── README.md
 ```
@@ -554,6 +558,29 @@ Server input validation is extracted into a dedicated module and covered by Node
 
 ### RLS transparency
 The reliability panel surfaces whether the backend is configured as RLS-enforced. The current project remains RLS-disabled and should not be treated as production-safe for sensitive data until the reviewed RLS policies are applied and verified.---
+
+
+# Phase 9 Incident Center
+
+Phase 9 adds an authenticated incident-audit experience on top of the existing SOS event API.
+
+## Incident details
+
+From SOS history, a signed-in user can open an individual event and inspect the event type and lifecycle status, creation time and contact count, latest stored coordinates and accuracy, trusted-contact delivery outcomes, recent location snapshots, and the backend event identifier.
+
+## Evidence and personal records
+
+The incident center can refresh the current event from the backend, copy the latest Google Maps location link, and export the selected incident as JSON containing the event, delivery records and saved location snapshots.
+
+The export is created in the browser from data already returned for the authenticated user.
+
+## Production status
+
+The backend status endpoint now reports Phase 9 incident-audit capabilities, while the frontend release uses version 0.9.0 and the PWA shell cache namespace is voiceprint-shell-v9.
+
+## Automated release verification
+
+`npm run verify:release` checks that the Phase 9 application files, Vercel security headers, server release markers and PWA cache namespace are present. CI runs this check after the frontend build and backend tests.
 
 # Phase 8 Production Hardening
 
