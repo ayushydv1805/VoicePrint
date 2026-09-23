@@ -13,6 +13,8 @@ import SafetyActions from "./components/Phase5SafetyActions";
 import PrivacyPanel from "./components/Phase7PrivacyPanel";
 import Phase8OperationsPanel from "./components/Phase8OperationsPanel";
 import usePhase8DeploymentStatus from "./hooks/usePhase8DeploymentStatus";
+import usePhase9Incident from "./hooks/usePhase9Incident";
+import Phase9IncidentPanel from "./components/Phase9IncidentPanel";
 
 const tabs = [
   ["home", "Home", "⌂"],
@@ -29,6 +31,7 @@ export default function Phase8App() {
 
   const p6 = usePhase6Status();
   const p8 = usePhase8DeploymentStatus();
+  const p9 = usePhase9Incident();
 
   const clearLocalData = async () => {
     const confirmed = window.confirm("Clear this browser VoicePrint data and sign out? Cloud contacts and SOS history will remain untouched.");
@@ -80,7 +83,7 @@ export default function Phase8App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 8 · OPERATIONS</span>
+          <span className="panel-kicker">PHASE 9 · INCIDENT CENTER</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -261,7 +264,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.8 · Phase 8</span>
+            <span className="version">VoicePrint v0.9 · Phase 9</span>
           </div>
         </aside>
 
@@ -320,7 +323,7 @@ export default function Phase8App() {
           )}
 
           {page === "contacts" && <Contacts user={c.user} contacts={c.contacts} onAdd={c.add} onRemove={c.remove} />}
-          {page === "history" && <History user={c.user} history={c.history} onRefresh={() => c.refresh().catch((e) => c.setError(e.message))} />}
+          {page === "history" && <History user={c.user} history={c.history} onRefresh={() => c.refresh().catch((e) => c.setError(e.message))} onOpenDetails={p9.loadEvent} />}
           {page === "settings" && settings}
 
           {!p5.online && (
@@ -354,6 +357,21 @@ export default function Phase8App() {
       </nav>
 
       {p5.toast && <div className="phase5-toast">{p5.toast}</div>}
+
+      {p9.detail?.event || p9.loading || p9.error ? (
+        <Phase9IncidentPanel
+          detail={p9.detail}
+          loading={p9.loading}
+          error={p9.error}
+          onClose={p9.close}
+          onRefresh={() => p9.detail?.event?.id && p9.loadEvent(p9.detail.event.id)}
+          onExport={p9.exportReport}
+          onCopyMap={async () => {
+            const copied = await p9.copyMapLink();
+            if (!copied) window.alert("Could not copy the map link.");
+          }}
+        />
+      ) : null}
 
       {c.open && (
         <Modal
