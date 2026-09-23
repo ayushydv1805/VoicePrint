@@ -92,3 +92,34 @@
   .phase8-release-row{grid-template-columns:1fr}
   .phase8-grid{grid-template-columns:1fr}
 }
+
+/* Phase 9 incident center */
+.history-detail-btn{justify-self:end;padding:8px 11px;font-size:10px;white-space:nowrap}
+.incident-overlay{position:fixed;inset:0;z-index:140;display:grid;place-items:center;padding:18px;background:rgba(2,5,12,.84);backdrop-filter:blur(16px)}
+.incident-panel{width:min(940px,100%);max-height:92vh;overflow:auto;border:1px solid rgba(124,108,255,.18);border-radius:22px;background:#0f1728;box-shadow:0 30px 110px rgba(0,0,0,.6);padding:26px}
+.incident-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.incident-head h2{margin:6px 0;font-family:"Space Grotesk";font-size:26px}
+.incident-head p{margin:0;color:var(--muted);font-size:11px}
+.incident-close{width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03);color:#c0c8d8;font-size:20px}
+.incident-loading{padding:24px 0;color:#96a1b5;font-size:12px}
+.incident-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:20px}
+.incident-summary>div,.incident-card{border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.018)}
+.incident-summary>div{padding:12px}.incident-summary span{display:block;color:#728098;font-size:8px;letter-spacing:.12em}
+.incident-summary strong{display:block;margin-top:6px;font-size:12px}
+.incident-status{text-transform:capitalize}.incident-status.dispatched{color:#7ef0bf}.incident-status.cancelled{color:#9aa4b8}.incident-status.pending{color:#f6ca68}
+.incident-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;margin-top:10px}
+.incident-card{padding:16px}.incident-card-head{margin-bottom:12px}
+.incident-card-head h3{margin:5px 0 0;font-family:"Space Grotesk";font-size:16px}
+.incident-coordinates{display:block;font-family:"Space Grotesk";font-size:17px}.incident-card>small{display:block;margin-top:5px;color:#6e7b93;font-size:9px}
+.incident-actions{margin-top:14px}.incident-delivery-summary{padding:10px 11px;border-radius:10px;background:rgba(124,108,255,.045);border:1px solid rgba(124,108,255,.1)}
+.incident-delivery-summary strong,.incident-delivery-summary small{display:block}.incident-delivery-summary strong{font-size:11px;line-height:1.45}.incident-delivery-summary small{margin-top:4px;color:#68758d;font-size:9px}
+.incident-list{margin-top:10px}.incident-row{display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.incident-row:last-child{border-bottom:0}
+.incident-status-dot{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;background:rgba(255,255,255,.03);color:#7e8aa0;font-size:9px}.incident-status-dot.sent{background:rgba(52,211,153,.08);color:#7ef0bf}.incident-status-dot.failed{background:rgba(251,113,133,.08);color:#ff9aaa}
+.incident-row strong,.incident-row small{display:block}.incident-row strong{font-size:10px}.incident-row small{margin-top:2px;color:#6f7c93;font-size:8px}
+.incident-empty{padding:16px 0;color:#69758c;font-size:10px}.incident-locations{margin-top:10px}.incident-location-table{display:grid;gap:6px}
+.incident-location-row{display:grid;grid-template-columns:1.5fr .5fr .8fr;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.012)}
+.incident-location-row strong{font-size:9px;font-family:"Space Grotesk"}.incident-location-row span,.incident-location-row small{font-size:8px;color:#6f7c93}.incident-location-row small{text-align:right}
+.incident-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.incident-footer>span{color:#5f6c83;font-size:8px;word-break:break-all}.incident-footer>div{display:flex;gap:8px}
+@media(max-width:900px){.incident-summary{grid-template-columns:1fr 1fr}.incident-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.history-detail-btn{grid-column:2;justify-self:start}.incident-panel{padding:19px;border-radius:18px}.incident-summary{grid-template-columns:1fr 1fr}.incident-location-row{grid-template-columns:1fr}.incident-location-row small{text-align:left}.incident-footer{align-items:flex-start;flex-direction:column}.incident-footer>div{width:100%;display:grid;grid-template-columns:1fr 1fr}.incident-footer .ghost-btn,.incident-footer .primary-btn{width:100%}}
