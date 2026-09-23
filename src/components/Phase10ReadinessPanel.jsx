@@ -27,7 +27,7 @@ export default function Phase10ReadinessPanel({ report, loading, error, onCheck 
   const status = cloud.status?.features || {};
   const smsConfigured = cloud.status?.sms?.configured;
 
-  const browserReady = browser.secureContext && browser.online && browser.localStorage;
+  const browserReady = browser.secureContext && browser.online && browser.localStorage && browser.microphone && browser.geolocation;
   const cloudReady = cloud.reachable && cloud.releaseParity && cloud.requestTracing;
   const dataReady = Boolean(status.securityRlsEnforced);
   const contactsReady = Boolean(report?.contacts?.ready);
@@ -66,7 +66,7 @@ export default function Phase10ReadinessPanel({ report, loading, error, onCheck 
           <Check label="Secure context" detail={browser.secureContext ? "HTTPS context detected." : "Use the deployed HTTPS app."} state={browser.secureContext ? "good" : "bad"} />
           <Check label="Microphone" detail={permissionText(browser.microphonePermission)} state={browser.microphone ? (browser.microphonePermission === "denied" ? "bad" : "good") : "bad"} />
           <Check label="Location" detail={permissionText(browser.geolocationPermission)} state={browser.geolocation ? "good" : "bad"} />
-          <Check label="Notifications" detail={permissionText(browser.notificationPermission)} state={browser.notifications ? (browser.notificationPermission === "denied" ? "warn" : "good") : "warn"} />
+          <Check label="Notifications" detail={permissionText(browser.notificationPermission)} state={browser.notifications ? (browser.notificationPermission === "unsupported" ? "warn" : browser.notificationPermission === "denied" ? "warn" : "good") : "warn"} />
           <Check label="Offline state" detail={browser.online ? "Browser reports an active network connection." : "Browser is offline."} state={browser.online ? "good" : "bad"} />
         </div>
 
