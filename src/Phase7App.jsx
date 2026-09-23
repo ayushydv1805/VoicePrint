@@ -11,6 +11,8 @@ import Account from "./components/Phase4Account";
 import Modal from "./components/Phase4Modal";
 import SafetyActions from "./components/Phase5SafetyActions";
 import PrivacyPanel from "./components/Phase7PrivacyPanel";
+import Phase8OperationsPanel from "./components/Phase8OperationsPanel";
+import usePhase8DeploymentStatus from "./hooks/usePhase8DeploymentStatus";
 
 const tabs = [
   ["home", "Home", "⌂"],
@@ -26,6 +28,7 @@ export default function Phase7App() {
   const lastNotificationRef = useRef("");
 
   const p6 = usePhase6Status();
+  const p8 = usePhase8DeploymentStatus();
 
   const clearLocalData = async () => {
     const confirmed = window.confirm("Clear this browser VoicePrint data and sign out? Cloud contacts and SOS history will remain untouched.");
@@ -77,7 +80,7 @@ export default function Phase7App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 7 · PROTECTION</span>
+          <span className="panel-kicker">PHASE 8 · OPERATIONS</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -194,6 +197,12 @@ export default function Phase7App() {
         onRefresh={p6.refresh}
         online={p5.online}
       />
+      <Phase8OperationsPanel
+        report={p8.report}
+        loading={p8.loading}
+        error={p8.error}
+        onCheck={p8.check}
+      />
     </div>
   );
 
@@ -252,7 +261,7 @@ export default function Phase7App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.7 · Phase 7</span>
+            <span className="version">VoicePrint v0.8 · Phase 8</span>
           </div>
         </aside>
 
