@@ -176,13 +176,15 @@ VoicePrint/
 │   │   ├── Phase5SafetyActions.jsx
 │   │   ├── Phase6ReliabilityPanel.jsx
 │   │   ├── Phase7ErrorBoundary.jsx
-│   │   └── Phase7PrivacyPanel.jsx
+│   │   ├── Phase7PrivacyPanel.jsx
+│   │   └── Phase8OperationsPanel.jsx
 │   │
 │   ├── hooks/
 │   │   ├── useSafetySensors.js
 │   │   ├── usePhase4Core.js
 │   │   ├── usePhase5Enhancements.js
-│   │   └── usePhase6Status.js
+│   │   ├── usePhase6Status.js
+│   │   └── usePhase8DeploymentStatus.js
 │   │
 │   ├── lib/
 │   │   ├── apiAuth.js
@@ -204,9 +206,11 @@ VoicePrint/
 │   └── migrations/
 │       ├── phase_4_rls.sql
 │       ├── phase_5_hardening.sql
-│       └── phase_6_reliability_hardening.sql
+│       ├── phase_6_reliability_hardening.sql
+│       └── phase_8_rls_activation.sql
 │
 ├── index.html
+├── vercel.json
 ├── package.json
 └── README.md
 ```
@@ -287,6 +291,7 @@ CORS_ORIGINS=https://your-vercel-domain.example
 ALERT_COOLDOWN_SECONDS=30
 LOCATION_UPDATE_MIN_SECONDS=5
 CONFIRMATION_WINDOW_SECONDS=10
+VOICEPRINT_RELEASE=phase-8
 
 # Optional SMS delivery. Keep these server-side secrets private.
 TWILIO_ACCOUNT_SID=
@@ -549,6 +554,38 @@ Server input validation is extracted into a dedicated module and covered by Node
 ### RLS transparency
 The reliability panel surfaces whether the backend is configured as RLS-enforced. The current project remains RLS-disabled and should not be treated as production-safe for sensitive data until the reviewed RLS policies are applied and verified.---
 
+# Phase 8 Production Hardening
+
+Phase 8 adds a deployment-aware production hardening layer around the existing Phase 6 reliability and Phase 7 safety/privacy features.
+
+## Vercel security baseline
+
+The frontend deployment now ships through vercel.json with:
+- Content Security Policy
+- Permissions Policy for microphone and geolocation
+- X-Frame-Options
+- X-Content-Type-Options
+- Referrer-Policy
+- HSTS
+
+The application shell and service worker use explicit cache-control rules so private/API responses are not cached and the shell namespace changes for the Phase 8 release.
+
+## Live deployment verification
+
+Settings includes a Production Guardrails panel that verifies the deployed Vercel response headers and checks the configured VoicePrint API for reachability, no-store behavior, request tracing and the backend release identifier.
+
+The panel is intentionally capable of showing a frontend/backend version mismatch rather than hiding it.
+
+## API response privacy
+
+The Express API now marks /api responses as no-store and no-cache, including health/status responses that can be useful when diagnosing the deployed safety path.
+
+## Database security baseline
+
+The repository includes supabase/migrations/phase_8_rls_activation.sql as a reviewed RLS policy baseline. The current Supabase database still has RLS disabled; enabling it is a separate database operation and should be explicitly reviewed and verified before real sensitive safety data is used.
+
+---
+
 # Phase 5 PWA & Device Features
 
 VoicePrint now includes a PWA foundation:
@@ -753,6 +790,7 @@ Before real-world use, verify:
 | Phase 5 | Security/performance hardening, PWA foundation, offline awareness, notifications, Wake Lock, quick emergency actions and database constraints |
 | Phase 6 | Reliability hardening, durable SOS idempotency, server-side location throttling, request tracing, event-detail inspection and live API diagnostics |
 | Phase 7 | Race-safe SOS lifecycle, privacy controls, history export, crash recovery, PWA cache versioning and automated backend regression tests |
+| Phase 8 | Vercel security headers, API cache hardening, live deployment verification, release metadata and reviewed RLS activation baseline |
 | Phase 8 | Vercel security headers, API cache hardening, live deployment verification, release metadata and reviewed RLS activation baseline |
 
 ---
