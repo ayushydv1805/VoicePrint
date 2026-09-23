@@ -5,6 +5,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import twilio from "twilio";
+import { cleanContact, cleanLocation, isValidIdempotencyKey } from "./validation.js";
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
@@ -204,54 +205,6 @@ async function supabaseRest(
 
 function tokenFrom(req) {
   return (req.headers.authorization || "").slice(7);
-}
-
-function cleanContact(value) {
-  const name =
-    typeof value?.name === "string"
-      ? value.name.trim().slice(0, 80)
-      : "";
-  const phone =
-    typeof value?.phone_e164 === "string"
-      ? value.phone_e164.trim()
-      : "";
-  const relationship =
-    typeof value?.relationship === "string"
-      ? value.relationship.trim().slice(0, 40)
-      : "Other";
-
-  if (!name || !/^\+[1-9][0-9]{7,14}$/.test(phone)) return null;
-
-  return {
-    name,
-    phone_e164: phone,
-    relationship: relationship || "Other",
-  };
-}
-
-function cleanLocation(value) {
-  const latitude = Number(value?.latitude);
-  const longitude = Number(value?.longitude);
-  const accuracy = Number(value?.accuracy);
-
-  if (
-    !Number.isFinite(latitude) ||
-    latitude < -90 ||
-    latitude > 90 ||
-    !Number.isFinite(longitude) ||
-    longitude < -180 ||
-    longitude > 180
-  ) {
-    return null;
-  }
-
-  return {
-    latitude,
-    longitude,
-    accuracy_m:
-      Number.isFinite(accuracy) && accuracy >= 0 ? accuracy : null,
-    captured_at: new Date().toISOString(),
-  };
 }
 
 function eventPublic(row) {
@@ -773,7 +726,7 @@ app.post("/api/v1/sos/events", async (req, res) => {
   const token = tokenFrom(req);
   const idem = req.header("Idempotency-Key");
 
-  if (!idem || !/^[a-zA-Z0-9._:-]{8,128}$/.test(idem)) {
+  if (!isValidIdempotencyKey(idem)) {
     return res.status(400).json({
       ok: false,
       error: "A valid idempotency key is required.",
