@@ -21,6 +21,7 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
 const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
+const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-8";
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
   Number(process.env.CONFIRMATION_WINDOW_SECONDS || 10) * 1000
@@ -65,6 +66,12 @@ app.use(
 );
 
 app.use(express.json({ limit: "32kb" }));
+
+app.use("/api", (_req, res, next) => {
+  res.set("Cache-Control", "no-store, max-age=0");
+  res.set("Pragma", "no-cache");
+  next();
+});
 
 app.use((req, res, next) => {
   const incoming = String(req.header("X-Request-ID") || "");
@@ -488,7 +495,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
     service: "voiceprint-api",
-    version: "phase-7",
+    version: RELEASE_VERSION,
     requestId: req.requestId,
     time: new Date().toISOString(),
     smsConfigured,
@@ -499,7 +506,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "7",
+    phase: "8",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -518,6 +525,8 @@ app.get("/api/v1/status", (req, res) => {
       emergencyServicesDispatch: false,
       requestTracing: true,
       securityRlsEnforced: SUPABASE_RLS_ENFORCED,
+      apiNoStore: true,
+      securityHeaders: true,
     },
   });
 });
@@ -1177,7 +1186,7 @@ app.use((error, req, res, _next) => {
 app.listen(PORT, () => {
   console.log(
     JSON.stringify({
-      message: "VoicePrint Phase 7 API listening",
+      message: "VoicePrint API listening",
       port: PORT,
       smsConfigured,
       confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
