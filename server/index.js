@@ -20,6 +20,7 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   1000,
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
+const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
   Number(process.env.CONFIRMATION_WINDOW_SECONDS || 10) * 1000
@@ -487,7 +488,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
     service: "voiceprint-api",
-    version: "phase-6",
+    version: "phase-7",
     requestId: req.requestId,
     time: new Date().toISOString(),
     smsConfigured,
@@ -498,7 +499,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "6",
+    phase: "7",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -515,6 +516,8 @@ app.get("/api/v1/status", (req, res) => {
       durableIdempotency: true,
       serverSideLocationThrottle: true,
       emergencyServicesDispatch: false,
+      requestTracing: true,
+      securityRlsEnforced: SUPABASE_RLS_ENFORCED,
     },
   });
 });
@@ -1174,7 +1177,7 @@ app.use((error, req, res, _next) => {
 app.listen(PORT, () => {
   console.log(
     JSON.stringify({
-      message: "VoicePrint Phase 6 API listening",
+      message: "VoicePrint Phase 7 API listening",
       port: PORT,
       smsConfigured,
       confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
