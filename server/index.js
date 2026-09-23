@@ -21,7 +21,7 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
 const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
-const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-8";
+const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-9";
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
   Number(process.env.CONFIRMATION_WINDOW_SECONDS || 10) * 1000
