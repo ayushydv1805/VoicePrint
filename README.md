@@ -195,6 +195,7 @@ VoicePrint/
 │   ├── Phase4App.jsx
 │   ├── Phase5App.jsx
 │   ├── Phase6App.jsx
+│   ├── Phase8App.jsx
 │   ├── phase4-entry.jsx
 │   ├── phase5-entry.jsx
 │   ├── phase6-entry.jsx
@@ -790,7 +791,6 @@ Before real-world use, verify:
 | Phase 5 | Security/performance hardening, PWA foundation, offline awareness, notifications, Wake Lock, quick emergency actions and database constraints |
 | Phase 6 | Reliability hardening, durable SOS idempotency, server-side location throttling, request tracing, event-detail inspection and live API diagnostics |
 | Phase 7 | Race-safe SOS lifecycle, privacy controls, history export, crash recovery, PWA cache versioning and automated backend regression tests |
-| Phase 8 | Vercel security headers, API cache hardening, live deployment verification, release metadata and reviewed RLS activation baseline |
 | Phase 8 | Vercel security headers, API cache hardening, live deployment verification, release metadata and reviewed RLS activation baseline |
 
 ---
