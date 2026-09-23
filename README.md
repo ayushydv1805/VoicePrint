@@ -160,6 +160,9 @@ VoicePrint/
 │   ├── index.js
 │   ├── package.json
 │   ├── .env.example
+│   ├── validation.js
+│   ├── test/
+│   │   └── validation.test.js
 │   └── README.md
 │
 ├── src/
@@ -171,7 +174,9 @@ VoicePrint/
 │   │   ├── Phase4Home.jsx
 │   │   ├── Phase4Modal.jsx
 │   │   ├── Phase5SafetyActions.jsx
-│   │   └── Phase6ReliabilityPanel.jsx
+│   │   ├── Phase6ReliabilityPanel.jsx
+│   │   ├── Phase7ErrorBoundary.jsx
+│   │   └── Phase7PrivacyPanel.jsx
 │   │
 │   ├── hooks/
 │   │   ├── useSafetySensors.js
@@ -190,6 +195,8 @@ VoicePrint/
 │   ├── Phase6App.jsx
 │   ├── phase4-entry.jsx
 │   ├── phase5-entry.jsx
+│   ├── phase6-entry.jsx
+│   ├── phase7-entry.jsx
 │   └── index.css
 │
 ├── supabase/
