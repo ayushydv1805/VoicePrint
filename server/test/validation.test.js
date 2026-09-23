@@ -34,3 +34,18 @@ test("rejects invalid location coordinates", () => {
   assert.equal(cleanLocation({ latitude: 30, longitude: 181 }), null);
   assert.equal(cleanLocation({ latitude: "abc", longitude: 76 }), null);
 });
+test("normalizes optional contact fields safely", () => {
+  const result = cleanContact({
+    name: "  Emergency Contact  ".repeat(10),
+    phone_e164: " +919876543210 ",
+    relationship: " ",
+  });
+  assert.equal(result.phone_e164, "+919876543210");
+  assert.equal(result.relationship, "Other");
+  assert.ok(result.name.length <= 80);
+});
+
+test("drops non-finite location accuracy", () => {
+  const result = cleanLocation({ latitude: 0, longitude: 0, accuracy: "Infinity" });
+  assert.equal(result.accuracy_m, null);
+});
