@@ -28,6 +28,10 @@ jobs:
         working-directory: server
         run: npm install
 
+      - name: Backend tests
+        working-directory: server
+        run: npm test
+
       - name: Check backend syntax
         run: |
           node --check server/index.js
