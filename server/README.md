@@ -42,6 +42,7 @@ ALERT_COOLDOWN_SECONDS=30
 LOCATION_UPDATE_MIN_SECONDS=5
 CONFIRMATION_WINDOW_SECONDS=10
 SUPABASE_RLS_ENFORCED=false
+VOICEPRINT_RELEASE=phase-8
 
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
@@ -97,6 +98,14 @@ Every response exposes `X-Request-ID`; the same value is included in JSON and st
 
 ### Security posture
 The server reports `securityRlsEnforced` from the `SUPABASE_RLS_ENFORCED` environment flag. This is a reporting mechanism only. PostgreSQL RLS must still be enabled and verified separately.
+
+### Phase 8 production hardening
+
+- API responses under /api are explicitly marked no-store.
+- /api/health reports the configured VoicePrint release identifier.
+- /api/v1/status reports Phase 8 capabilities, including API cache hardening and security-header readiness.
+- The Vercel frontend applies the browser-facing security header baseline through vercel.json.
+- PostgreSQL RLS remains a separate Supabase deployment control and is not enabled by this Node server.
 
 ## SMS delivery
 
