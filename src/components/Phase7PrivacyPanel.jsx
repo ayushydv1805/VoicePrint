@@ -20,7 +20,7 @@ export default function Phase7PrivacyPanel({ user, history, onClearLocalData }) 
     <section className="panel privacy-panel">
       <div className="privacy-head">
         <div>
-          <span className="panel-kicker">PHASE 7 · PRIVACY</span>
+          <span className="panel-kicker">PHASE 8 · PRIVACY</span>
           <h2>Data & privacy controls</h2>
           <p>See what this browser keeps locally and manage your safety data export.</p>
         </div>
