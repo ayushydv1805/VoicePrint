@@ -128,3 +128,34 @@
 /* Phase 10 safety readiness */
 .phase10-panel{margin-top:16px;background:linear-gradient(145deg,rgba(18,28,49,.82),rgba(10,17,31,.78))}.phase10-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.phase10-head h2{font-family:"Space Grotesk";font-size:22px;margin:7px 0 5px}.phase10-head p{color:var(--muted);font-size:12px;line-height:1.5;margin:0;max-width:650px}.phase10-banner{display:flex;align-items:center;gap:14px;margin:20px 0 16px;padding:14px 16px;border:1px solid rgba(124,108,255,.16);border-radius:14px;background:rgba(124,108,255,.045)}.phase10-banner-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.18);color:#ff9aaa;font-weight:900}.phase10-banner-icon.ready{background:rgba(52,211,153,.09);border-color:rgba(52,211,153,.18);color:#7ef0bf}.phase10-banner strong,.phase10-banner span{display:block}.phase10-banner strong{font-size:13px}.phase10-banner span{color:#78849c;font-size:11px;margin-top:3px}.phase10-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.phase10-card{border:1px solid var(--line);background:rgba(255,255,255,.018);border-radius:13px;padding:18px}.phase10-card h3{font-family:"Space Grotesk";font-size:16px;margin:7px 0 10px}.phase10-check{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--line)}.phase10-check:last-child{border-bottom:0}.phase10-check .check{flex:0 0 22px}.phase10-check .phase10-warn{background:rgba(251,191,36,.09);color:#f5c85a}.phase10-check>div strong,.phase10-check>div small{display:block}.phase10-check>div strong{font-size:12px;color:#dce2ef}.phase10-check>div small{color:#6f7b95;font-size:10px;margin-top:3px;line-height:1.4}.phase10-foot{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.phase10-foot span{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.025);border:1px solid var(--line);color:#73809a;font-size:10px}.phase10-foot span:first-child{color:#9e9aff}
 @media(max-width:760px){.phase10-head{flex-direction:column}.phase10-grid{grid-template-columns:1fr}.phase10-card{padding:15px}.phase10-foot{display:grid;grid-template-columns:1fr}.phase10-foot span{border-radius:10px}}
+
+
+/* Phase 12 safe drill */
+.phase12-panel{margin-top:16px;background:linear-gradient(145deg,rgba(17,34,45,.84),rgba(10,17,31,.8));border-color:rgba(45,212,191,.13)}
+.phase12-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.phase12-head h2{font-family:"Space Grotesk";font-size:22px;margin:7px 0 5px}
+.phase12-head p{color:var(--muted);font-size:12px;line-height:1.55;margin:0;max-width:650px}
+.phase12-safety-note{display:flex;align-items:center;gap:12px;margin:18px 0 14px;padding:13px 15px;border:1px solid rgba(52,211,153,.16);background:rgba(52,211,153,.045);border-radius:12px}
+.phase12-safety-note>span{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(52,211,153,.1);color:#7ef0bf;font-weight:900}
+.phase12-safety-note strong,.phase12-safety-note small{display:block}
+.phase12-safety-note strong{font-size:12px}
+.phase12-safety-note small{color:#73809a;font-size:10px;line-height:1.45;margin-top:2px}
+.phase12-action-note{padding:11px 12px;margin:0 0 14px;border:1px solid rgba(251,191,36,.16);background:rgba(251,191,36,.045);color:#d2b567;border-radius:10px;font-size:10px}
+.phase12-result-banner{display:flex;align-items:center;gap:12px;margin:16px 0;padding:12px 14px;border:1px solid rgba(124,108,255,.16);background:rgba(124,108,255,.04);border-radius:12px}
+.phase12-result-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(52,211,153,.1);color:#7ef0bf}
+.phase12-result-banner strong,.phase12-result-banner span{display:block}
+.phase12-result-banner strong{font-size:12px}
+.phase12-result-banner span{color:#6f7b95;font-size:10px;margin-top:2px}
+.phase12-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.phase12-card{border:1px solid var(--line);background:rgba(255,255,255,.015);border-radius:13px;padding:18px}
+.phase12-card h3{font-family:"Space Grotesk";font-size:16px;margin:7px 0 9px}
+.phase12-check{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+.phase12-check:last-child{border-bottom:0}
+.phase12-check .check{flex:0 0 22px}
+.phase12-warn{background:rgba(251,191,36,.09);color:#f5c85a!important}
+.phase12-check strong,.phase12-check small{display:block}
+.phase12-check strong{font-size:12px;color:#dce2ef}
+.phase12-check small{color:#6f7b95;font-size:10px;line-height:1.4;margin-top:3px}
+.phase12-foot{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.phase12-foot span{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:#76839b;font-size:9px}
+@media(max-width:760px){.phase12-head{flex-direction:column}.phase12-head .primary-btn{width:100%}.phase12-grid{grid-template-columns:1fr}.phase12-card{padding:15px}.phase12-foot{display:grid;grid-template-columns:1fr}.phase12-foot span{border-radius:10px}}

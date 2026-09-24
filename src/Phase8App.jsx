@@ -17,6 +17,8 @@ import usePhase9Incident from "./hooks/usePhase9Incident";
 import Phase9IncidentPanel from "./components/Phase9IncidentPanel";
 import usePhase10Readiness from "./hooks/usePhase10Readiness";
 import Phase10ReadinessPanel from "./components/Phase10ReadinessPanel";
+import usePhase12Drill from "./hooks/usePhase12Drill";
+import Phase12DrillPanel from "./components/Phase12DrillPanel";
 
 const tabs = [
   ["home", "Home", "⌂"],
@@ -52,6 +54,7 @@ export default function Phase8App() {
     sosActive: c.open,
   });
   const p10 = usePhase10Readiness({ user: c.user, contacts: c.contacts, online: p5.online });
+  const p12 = usePhase12Drill({ user: c.user, contacts: c.contacts, online: p5.online, location: c.location });
 
   useEffect(() => {
     if (!c.open || !c.event?.id || !c.user) return;
@@ -86,7 +89,7 @@ export default function Phase8App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 11 · OPERATIONS</span>
+          <span className="panel-kicker">PHASE 12 · OPERATIONS</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -215,6 +218,14 @@ export default function Phase8App() {
         error={p10.error}
         onCheck={p10.check}
       />
+      <Phase12DrillPanel
+        report={p12.report}
+        running={p12.running}
+        error={p12.error}
+        onRun={p12.run}
+        user={c.user}
+        online={p5.online}
+      />
     </div>
   );
 
@@ -273,7 +284,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.11 · Phase 11</span>
+            <span className="version">VoicePrint v0.12 · Phase 12</span>
           </div>
         </aside>
 

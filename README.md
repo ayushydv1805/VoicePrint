@@ -760,7 +760,7 @@ Test:
 
 ## Deployment parity
 
-The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 + Phase 11 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
+The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 + Phase 11 + Phase 12 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
 
 
 ## Frontend — Vercel
@@ -833,6 +833,7 @@ Before real-world use, verify:
 | Phase 9 | Incident detail center, delivery audit, location snapshots, map-link sharing, incident JSON export and release verification |
 | Phase 10 | Safety pre-flight readiness center, database RLS activation, release markers and automated readiness verification |
 | Phase 11 | Bounded trusted-contact SMS retries, delivery attempt auditing, honest provider state and RLS performance tuning |
+| Phase 12 | Non-delivery safety drill, authenticated diagnostics and release verification |
 
 ---
 
@@ -861,6 +862,38 @@ Phase 11 also updates the existing per-user RLS policies to evaluate the authent
 ## Release status
 
 Frontend and backend versions are 0.11.0, the backend release marker is phase-11, and the PWA shell namespace is voiceprint-shell-v11.
+
+# Phase 12 Safety Drill & Diagnostics
+
+Phase 12 adds a safe end-to-end drill that verifies the browser and authenticated cloud boundary without sending a real alert.
+
+## Safety drill
+
+From Settings, a signed-in user can run the Phase 12 drill. It checks:
+- secure browser context,
+- microphone support and permission state,
+- geolocation support and current location availability,
+- network state,
+- PWA service-worker support,
+- authenticated API reachability,
+- database RLS enforcement,
+- trusted-contact availability,
+- delivery resilience availability,
+- optional SMS provider configuration.
+
+The drill is deliberately non-delivery. It does not create an SOS event, send Twilio SMS, or contact public emergency services.
+
+## Read-only backend drill endpoint
+
+The backend exposes:
+
+`GET /api/v1/safety/drill`
+
+The endpoint requires authentication, verifies access to the user's trusted-contact rows, and returns release/capability diagnostics. It does not mutate safety data.
+
+## Release status
+
+Frontend and backend versions are `0.12.0`, the backend release marker is `phase-12`, and the PWA shell namespace is `voiceprint-shell-v12`.
 
 # Future Roadmap
 
