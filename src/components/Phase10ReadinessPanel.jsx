@@ -26,6 +26,7 @@ export default function Phase10ReadinessPanel({ report, loading, error, onCheck 
   const cloud = report?.cloud || {};
   const status = cloud.status?.features || {};
   const smsConfigured = cloud.status?.sms?.configured;
+  const deliveryResilience = Boolean(status.deliveryResilience);
 
   const browserReady = browser.secureContext && browser.online && browser.localStorage && browser.microphone && browser.geolocation;
   const cloudReady = cloud.reachable && cloud.releaseParity && cloud.requestTracing;
@@ -78,7 +79,7 @@ export default function Phase10ReadinessPanel({ report, loading, error, onCheck 
           <Check label="Request tracing" detail={cloud.requestTracing ? "Request IDs are active." : "Request tracing not verified."} state={cloud.requestTracing ? "good" : "warn"} />
           <Check label="Database RLS" detail={dataReady ? "Row Level Security is enforced." : "RLS is not confirmed as enforced."} state={dataReady ? "good" : "bad"} />
           <Check label="Trusted contact" detail={contactsReady ? report.contacts.count + " saved contact(s)." : userStatus(report?.contacts, cloud.authReady)} state={contactsReady ? "good" : "warn"} />
-          <Check label="SMS provider" detail={smsConfigured ? "Twilio is configured server-side." : "Optional provider is not configured."} state={smsConfigured ? "good" : "warn"} />
+          <Check label="SMS provider" detail={smsConfigured ? "Twilio is configured server-side." : "Optional provider is not configured."} state={smsConfigured ? "good" : "warn"} />\n          <Check label="Delivery resilience" detail={deliveryResilience ? "Bounded per-contact retries are enabled." : "Retry layer not verified."} state={deliveryResilience ? "good" : "warn"} />
         </div>
       </div>
 
