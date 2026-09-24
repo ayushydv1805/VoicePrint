@@ -72,7 +72,7 @@ export default function usePhase10Readiness({ user, contacts, online }) {
         cloud: {
           reachable: healthResponse.ok && health?.ok === true,
           release: health?.version || "unknown",
-          releaseParity: health?.version === "phase-10",
+          releaseParity: health?.version === "phase-11",
           requestTracing: Boolean(health?.requestId),
           authReady: Boolean(user),
           status,
