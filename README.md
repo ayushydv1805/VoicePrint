@@ -760,7 +760,7 @@ Test:
 
 ## Deployment parity
 
-The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
+The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 + Phase 11 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
 
 
 ## Frontend — Vercel
@@ -832,8 +832,35 @@ Before real-world use, verify:
 | Phase 8 | Vercel security headers, API cache hardening, live deployment verification, release metadata and reviewed RLS activation baseline |
 | Phase 9 | Incident detail center, delivery audit, location snapshots, map-link sharing, incident JSON export and release verification |
 | Phase 10 | Safety pre-flight readiness center, database RLS activation, release markers and automated readiness verification |
+| Phase 11 | Bounded trusted-contact SMS retries, delivery attempt auditing, honest provider state and RLS performance tuning |
 
 ---
+
+# Phase 11 Delivery Resilience
+
+Phase 11 strengthens trusted-contact SMS delivery without claiming that a browser-based safety app can guarantee delivery.
+
+## Bounded provider retries
+
+When Twilio is configured, each trusted-contact SMS attempt is retried within the same dispatch request up to three times with short backoff delays. The retry count is bounded so a provider failure cannot create an unbounded request.
+
+Delivery rows now persist:
+- attempt count,
+- last attempt time,
+- next retry time while a bounded retry is pending,
+- final provider/error state.
+
+## Honest provider state
+
+When no Twilio credentials are configured, trusted-contact delivery rows are recorded as unavailable by the backend rather than remaining indefinitely in a pending state. The incident center exposes that provider state and the observed attempt count.
+
+## RLS performance tuning
+
+Phase 11 also updates the existing per-user RLS policies to evaluate the authenticated user ID once per policy execution using the recommended (select auth.uid()) form.
+
+## Release status
+
+Frontend and backend versions are 0.11.0, the backend release marker is phase-11, and the PWA shell namespace is voiceprint-shell-v11.
 
 # Future Roadmap
 

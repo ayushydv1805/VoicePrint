@@ -68,7 +68,7 @@ export default function Phase9IncidentPanel({
                     {deliveries.map((item) => (
                       <div className="incident-row" key={item.id}>
                         <span className={"incident-status-dot " + item.status}>{item.status === "sent" ? "✓" : item.status === "failed" ? "!" : "•"}</span>
-                        <div><strong>{item.contactName || "Trusted contact"}</strong><small>{item.phoneE164 || "Phone hidden"} · {item.provider || "No provider"}</small></div>
+                        <div><strong>{item.contactName || "Trusted contact"}</strong><small>{item.phoneE164 || "Phone hidden"} · {item.provider || "No provider"} · {Number(item.attemptCount || 0)} attempt{Number(item.attemptCount || 0) === 1 ? "" : "s"}</small></div>
                       </div>
                     ))}
                   </div>
