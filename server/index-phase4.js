@@ -21,7 +21,8 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
 const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
-const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-11";
+const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-12";
+const DRILL_MODE = true;
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
   Number(process.env.CONFIRMATION_WINDOW_SECONDS || 10) * 1000
@@ -580,7 +581,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "11",
+    phase: "12",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -607,8 +608,59 @@ app.get("/api/v1/status", (req, res) => {
       deliveryResilience: true,
       deliveryMaxAttempts: DELIVERY_MAX_ATTEMPTS,
       readiness: true,
+      safetyDrill: DRILL_MODE,
     },
   });
+});
+
+
+app.get("/api/v1/safety/drill", async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+
+  try {
+    const contacts = await supabaseRest(
+      "trusted_contacts",
+      {
+        query: `?select=id&user_id=eq.${encodeURIComponent(user.id)}&limit=20`,
+      },
+      tokenFrom(req)
+    );
+
+    return res.json({
+      ok: true,
+      phase: "12",
+      drill: true,
+      userAuthenticated: true,
+      trustedContactCount: Array.isArray(contacts) ? contacts.length : 0,
+      sms: {
+        configured: smsConfigured,
+        provider: smsConfigured ? "twilio" : null,
+      },
+      confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
+      locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
+      deliveryMaxAttempts: DELIVERY_MAX_ATTEMPTS,
+      features: {
+        securityRlsEnforced: SUPABASE_RLS_ENFORCED,
+        deliveryResilience: true,
+        safetyDrill: DRILL_MODE,
+        emergencyServicesDispatch: false,
+      },
+      guarantees: {
+        createsSosEvent: false,
+        sendsSms: false,
+        contactsEmergencyServices: false,
+      },
+      requestId: req.requestId,
+      serverTime: new Date().toISOString(),
+    });
+  } catch {
+    return res.status(502).json({
+      ok: false,
+      error: "Could not complete the safety drill check.",
+      requestId: req.requestId,
+    });
+  }
 });
 
 app.get("/api/v1/contacts", async (req, res) => {
