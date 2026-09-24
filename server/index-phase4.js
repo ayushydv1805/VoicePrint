@@ -26,6 +26,11 @@ const CONFIRMATION_WINDOW_MS = Math.max(
   0,
   Number(process.env.CONFIRMATION_WINDOW_SECONDS || 10) * 1000
 );
+const DELIVERY_MAX_ATTEMPTS = Math.min(
+  3,
+  Math.max(1, Number(process.env.DELIVERY_MAX_ATTEMPTS || 3))
+);
+const DELIVERY_RETRY_DELAYS_MS = [0, 750, 1500];
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -254,6 +259,9 @@ function publicDelivery(row) {
     provider: row.provider,
     sentAt: row.sent_at,
     error: row.error_message || null,
+    attemptCount: Number(row.attempt_count || 0),
+    lastAttemptAt: row.last_attempt_at || null,
+    nextRetryAt: row.next_retry_at || null,
   };
 }
 
@@ -269,6 +277,88 @@ function alertMessage(event, location) {
     "Please check on the VoicePrint user. This trusted-contact alert does not itself contact emergency services.",
   ].join("\n");
 }
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function sendSmsWithBoundedRetry(contact, event, location, user, token) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= DELIVERY_MAX_ATTEMPTS; attempt += 1) {
+    const delay = DELIVERY_RETRY_DELAYS_MS[Math.min(attempt - 1, DELIVERY_RETRY_DELAYS_MS.length - 1)];
+    if (delay) await wait(delay);
+
+    const attemptedAt = new Date().toISOString();
+
+    try {
+      const message = await smsClient.messages.create({
+        body: alertMessage(event, location),
+        from: process.env.TWILIO_FROM_NUMBER,
+        to: contact.phone_e164,
+      });
+
+      await supabaseRest(
+        "sos_event_deliveries",
+        {
+          method: "PATCH",
+          query: `?id=eq.${encodeURIComponent(contact.id)}&user_id=eq.${encodeURIComponent(user.id)}`,
+          body: {
+            status: "sent",
+            provider: "twilio",
+            provider_message_id: message.sid,
+            sent_at: attemptedAt,
+            attempt_count: attempt,
+            last_attempt_at: attemptedAt,
+            next_retry_at: null,
+            error_message: null,
+          },
+        },
+        token
+      );
+
+      return { status: "sent", attempts: attempt, sid: message.sid };
+    } catch (error) {
+      lastError = error;
+      const isFinalAttempt = attempt === DELIVERY_MAX_ATTEMPTS;
+      const nextRetryAt = isFinalAttempt
+        ? null
+        : new Date(Date.now() + DELIVERY_RETRY_DELAYS_MS[Math.min(attempt, DELIVERY_RETRY_DELAYS_MS.length - 1)]).toISOString();
+
+      await supabaseRest(
+        "sos_event_deliveries",
+        {
+          method: "PATCH",
+          query: `?id=eq.${encodeURIComponent(contact.id)}&user_id=eq.${encodeURIComponent(user.id)}`,
+          body: {
+            status: isFinalAttempt ? "failed" : "pending",
+            provider: "twilio",
+            attempt_count: attempt,
+            last_attempt_at: attemptedAt,
+            next_retry_at: nextRetryAt,
+            error_message: error?.message || "SMS delivery failed.",
+          },
+        },
+        token
+      );
+
+      if (isFinalAttempt) {
+        return {
+          status: "failed",
+          attempts: attempt,
+          error: error?.message || "SMS delivery failed.",
+        };
+      }
+    }
+  }
+
+  return {
+    status: "failed",
+    attempts: DELIVERY_MAX_ATTEMPTS,
+    error: lastError?.message || "SMS delivery failed.",
+  };
+}
+
 
 async function getLatestEvent(user, token) {
   const rows = await supabaseRest(
@@ -381,60 +471,44 @@ async function dispatchEvent(eventId, user, token) {
 
       const results = await Promise.allSettled(
         contacts.map((contact) =>
-          smsClient.messages.create({
-            body: alertMessage(event, location),
-            from: process.env.TWILIO_FROM_NUMBER,
-            to: contact.phone_e164,
-          })
+          sendSmsWithBoundedRetry(contact, event, location, user, token)
         )
       );
 
-      for (let index = 0; index < results.length; index += 1) {
-        const result = results[index];
-
-        if (result.status === "fulfilled") {
+      for (const result of results) {
+        if (result.status === "fulfilled" && result.value?.status === "sent") {
           sent += 1;
-
-          await supabaseRest(
-            "sos_event_deliveries",
-            {
-              method: "PATCH",
-              query: `?id=eq.${encodeURIComponent(
-                contacts[index].id
-              )}&user_id=eq.${encodeURIComponent(user.id)}`,
-              body: {
-                status: "sent",
-                provider: "twilio",
-                provider_message_id: result.value.sid,
-                sent_at: new Date().toISOString(),
-                error_message: null,
-              },
-            },
-            token
-          );
         } else {
           failed += 1;
-
-          await supabaseRest(
-            "sos_event_deliveries",
-            {
-              method: "PATCH",
-              query: `?id=eq.${encodeURIComponent(
-                contacts[index].id
-              )}&user_id=eq.${encodeURIComponent(user.id)}`,
-              body: {
-                status: "failed",
-                provider: "twilio",
-                error_message:
-                  result.reason?.message || "SMS failed.",
-              },
-            },
-            token
-          );
         }
       }
 
-      summary = `${sent} SMS sent, ${failed} failed.`;
+      summary = `${sent} SMS sent, ${failed} failed after up to ${DELIVERY_MAX_ATTEMPTS} attempts per contact.`;
+    } else if (!smsConfigured && contacts.length) {
+      failed = contacts.length;
+
+      await Promise.all(
+        contacts.map((contact) =>
+          supabaseRest(
+            "sos_event_deliveries",
+            {
+              method: "PATCH",
+              query: `?id=eq.${encodeURIComponent(contact.id)}&user_id=eq.${encodeURIComponent(user.id)}`,
+              body: {
+                status: "failed",
+                provider: "system",
+                attempt_count: 0,
+                last_attempt_at: null,
+                next_retry_at: null,
+                error_message: "SMS provider is not configured on the backend.",
+              },
+            },
+            token
+          )
+        )
+      );
+
+      summary = `0 SMS sent, ${failed} unavailable because the SMS provider is not configured.`;
     }
 
     const updated = await supabaseRest(
@@ -506,7 +580,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "10",
+    phase: "11",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -530,6 +604,8 @@ app.get("/api/v1/status", (req, res) => {
       incidentAudit: true,
       locationHistory: true,
       deliveryAudit: true,
+      deliveryResilience: true,
+      deliveryMaxAttempts: DELIVERY_MAX_ATTEMPTS,
       readiness: true,
     },
   });
