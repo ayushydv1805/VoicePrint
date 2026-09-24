@@ -27,7 +27,7 @@ for (const marker of ["usePhase12Drill", "Phase12DrillPanel"]) {
 const server = fs.readFileSync("server/index.js", "utf8");
 for (const marker of [
   'phase: "12"',
-  "safetyDrill: true",
+  "safetyDrill: DRILL_MODE",
   "deliveryResilience: true",
   "DRILL_MODE",
 ]) {
