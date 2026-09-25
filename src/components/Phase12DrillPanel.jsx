@@ -69,7 +69,7 @@ export default function Phase12DrillPanel({ report, running, error, onRun, user,
             <div className="phase12-card">
               <span className="panel-kicker">CLOUD</span>
               <h3>Safe backend simulation</h3>
-              <DrillCheck label="Drill endpoint" detail={backendReady ? "Authenticated Phase 12 drill response received." : "Cloud drill response not verified."} state={backendReady ? "good" : "bad"} />
+              <DrillCheck label="Drill endpoint" detail={backendReady ? "Authenticated Phase 13 drill response received." : "Cloud drill response not verified."} state={backendReady ? "good" : "bad"} />
               <DrillCheck label="Database RLS" detail={features.securityRlsEnforced ? "RLS is enforced." : "RLS is not confirmed."} state={features.securityRlsEnforced ? "good" : "bad"} />
               <DrillCheck label="Trusted contacts" detail={report.contacts.count + " contact(s) loaded for this account."} state={report.contacts.count > 0 ? "good" : "warn"} />
               <DrillCheck label="SMS provider" detail={smsConfigured ? "Twilio is configured, but this drill will not send SMS." : "Twilio is not configured; drill remains non-delivery."} state="warn" />
