@@ -19,6 +19,8 @@ import usePhase10Readiness from "./hooks/usePhase10Readiness";
 import Phase10ReadinessPanel from "./components/Phase10ReadinessPanel";
 import usePhase12Drill from "./hooks/usePhase12Drill";
 import Phase12DrillPanel from "./components/Phase12DrillPanel";
+import usePhase13Recovery from "./hooks/usePhase13Recovery";
+import Phase13RecoveryPanel from "./components/Phase13RecoveryPanel";
 
 const tabs = [
   ["home", "Home", "⌂"],
@@ -55,6 +57,7 @@ export default function Phase8App() {
   });
   const p10 = usePhase10Readiness({ user: c.user, contacts: c.contacts, online: p5.online });
   const p12 = usePhase12Drill({ user: c.user, contacts: c.contacts, online: p5.online, location: c.location });
+  const p13 = usePhase13Recovery({ user: c.user, online: p5.online, onRecover: c.recoverEvent });
 
   useEffect(() => {
     if (!c.open || !c.event?.id || !c.user) return;
@@ -89,7 +92,7 @@ export default function Phase8App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 12 · OPERATIONS</span>
+          <span className="panel-kicker">PHASE 13 · OPERATIONS</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -284,7 +287,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.12 · Phase 12</span>
+            <span className="version">VoicePrint v0.13 · Phase 13</span>
           </div>
         </aside>
 
@@ -400,6 +403,7 @@ export default function Phase8App() {
           location={c.location}
           onClose={c.closeFlow}
           onFinish={c.finish}
+          recovered={c.recovered}
         />
       )}
     </div>
