@@ -25,7 +25,6 @@ export default function usePhase4Core() {
   const [authMsg, setAuthMsg] = useState("");
   const [sosWatch, setSosWatch] = useState(false);
   const [recovered, setRecovered] = useState(false);
-  const [recovered, setRecovered] = useState(false);
   const lastLocationSyncAt = useRef(0);
   const flowLockRef = useRef(false);
   const cancelRequestedRef = useRef(null);
@@ -241,7 +240,6 @@ export default function usePhase4Core() {
 
   const logout = useCallback(async () => {
     await signOut();
-    setRecovered(false);
     setRecovered(false);
     setUser(null);
     setContacts([]);
