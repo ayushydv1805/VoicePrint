@@ -21,7 +21,7 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
 const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
-const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-12";
+const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-13";
 const DRILL_MODE = true;
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
@@ -581,7 +581,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "12",
+    phase: "13",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -609,6 +609,8 @@ app.get("/api/v1/status", (req, res) => {
       deliveryMaxAttempts: DELIVERY_MAX_ATTEMPTS,
       readiness: true,
       safetyDrill: DRILL_MODE,
+      recovery: true,
+      safeRecovery: true,
     },
   });
 });
@@ -629,7 +631,7 @@ app.get("/api/v1/safety/drill", async (req, res) => {
 
     return res.json({
       ok: true,
-      phase: "12",
+      phase: "13",
       drill: true,
       userAuthenticated: true,
       trustedContactCount: Array.isArray(contacts) ? contacts.length : 0,
@@ -645,6 +647,7 @@ app.get("/api/v1/safety/drill", async (req, res) => {
         deliveryResilience: true,
         safetyDrill: DRILL_MODE,
         emergencyServicesDispatch: false,
+        recovery: true,
       },
       guarantees: {
         createsSosEvent: false,
@@ -658,6 +661,58 @@ app.get("/api/v1/safety/drill", async (req, res) => {
     return res.status(502).json({
       ok: false,
       error: "Could not complete the safety drill check.",
+      requestId: req.requestId,
+    });
+  }
+});
+
+function recoveryPublic(row) {
+  const event = eventPublic(row);
+  const createdAt = Date.parse(row.created_at || "");
+  const remainingMs =
+    CONFIRMATION_WINDOW_MS -
+    (Number.isFinite(createdAt) ? Date.now() - createdAt : 0);
+
+  return {
+    ...event,
+    confirmationRemainingSeconds: Number.isFinite(createdAt)
+      ? Math.max(0, Math.ceil(remainingMs / 1000))
+      : 0,
+    recoverable: true,
+  };
+}
+
+app.get("/api/v1/sos/active", async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+
+  try {
+    const events = await supabaseRest(
+      "sos_events",
+      {
+        query: `?select=*&user_id=eq.${encodeURIComponent(
+          user.id
+        )}&status=eq.pending&order=created_at.desc&limit=5`,
+      },
+      tokenFrom(req)
+    );
+
+    return res.json({
+      ok: true,
+      events: (events || []).map(recoveryPublic),
+      requestId: req.requestId,
+    });
+  } catch (error) {
+    console.error(JSON.stringify({
+      level: "error",
+      requestId: req.requestId,
+      route: req.path,
+      message: error?.message,
+    }));
+
+    return res.status(502).json({
+      ok: false,
+      error: "Could not load recoverable SOS events.",
       requestId: req.requestId,
     });
   }
