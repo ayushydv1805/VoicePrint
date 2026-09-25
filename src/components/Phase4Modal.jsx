@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function Phase4Modal({event,user,location,onClose,onFinish}){
+export default function Phase4Modal({event,user,location,onClose,onFinish,recovered=false}){
   const [seconds,setSeconds]=useState(10);
   const [started,setStarted]=useState(false);
 
@@ -28,7 +28,7 @@ export default function Phase4Modal({event,user,location,onClose,onFinish}){
     <div className="sos-modal-icon">✦</div>
     <span className="danger-label">VOICEPRINT</span>
     <h2>{event?.status==="cancelled" ? "Event cancelled" : event?.status==="dispatched" ? "Alert processed" : "Emergency flow active"}</h2>
-    <p>{!user ? "Local demo mode. Sign in to enable cloud alerts." : event ? "Your cloud SOS event is active." : "Creating your secure SOS event…"}</p>
+    <p>{!user ? "Local demo mode. Sign in to enable cloud alerts." : recovered ? "A pending SOS event was recovered. This window gives you another 10 seconds to review or cancel it." : event ? "Your cloud SOS event is active." : "Creating your secure SOS event…"}</p>
     <div className="sos-summary">
       <div><span>LOCATION</span><strong>{location ? location.latitude.toFixed(5)+", "+location.longitude.toFixed(5) : "Waiting"}</strong></div>
       <div><span>ACCOUNT</span><strong>{user ? "Signed in" : "Local"}</strong></div>

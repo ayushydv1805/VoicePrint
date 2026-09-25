@@ -299,7 +299,7 @@ CORS_ORIGINS=https://your-vercel-domain.example
 ALERT_COOLDOWN_SECONDS=30
 LOCATION_UPDATE_MIN_SECONDS=5
 CONFIRMATION_WINDOW_SECONDS=10
-VOICEPRINT_RELEASE=phase-10
+VOICEPRINT_RELEASE=phase-13
 
 # Optional SMS delivery. Keep these server-side secrets private.
 TWILIO_ACCOUNT_SID=
@@ -962,3 +962,20 @@ For real emergencies, use the appropriate emergency facilities available on the 
 
 
 <!-- Vercel Phase 10 retry window -->
+
+
+## Phase 13 Interrupted-Session Recovery
+
+Phase 13 adds a recovery path for authenticated pending SOS events that survive a page refresh, browser crash, or closed tab while the cloud event is still pending.
+
+### Recovery behavior
+
+- `GET /api/v1/sos/active` returns only the signed-in user's pending SOS events.
+- Settings shows the trigger source, saved location, contact count, event age, and confirmation-gate state.
+- Recovering a pending event reuses the existing event ID, so it does not create a duplicate SOS event.
+- Recovery opens the normal SOS modal with a fresh 10-second local review window.
+- The existing server-side confirmation gate still applies before dispatch.
+- The recovery endpoint is read-only and does not send SMS or contact emergency services.
+- A user can cancel a recovered event from Settings without creating another event.
+
+The release is version 0.13.0 and the PWA shell cache namespace is `voiceprint-shell-v13`.

@@ -24,6 +24,7 @@ export default function usePhase4Core() {
   const [error, setError] = useState("");
   const [authMsg, setAuthMsg] = useState("");
   const [sosWatch, setSosWatch] = useState(false);
+  const [recovered, setRecovered] = useState(false);
   const lastLocationSyncAt = useRef(0);
   const flowLockRef = useRef(false);
   const cancelRequestedRef = useRef(null);
@@ -72,6 +73,7 @@ export default function usePhase4Core() {
     const flowToken = { cancelled: false };
     cancelRequestedRef.current = flowToken;
     setSource(src);
+    setRecovered(false);
     setOpen(true);
     setEvent(null);
     setError("");
@@ -130,6 +132,36 @@ export default function usePhase4Core() {
       .catch((e) => setError(e.message));
   }, [open, event?.id, event?.status, location]);
 
+  const recoverEvent = useCallback(async (eventId) => {
+    if (!active || open || flowLockRef.current || !user || !eventId) return false;
+
+    try {
+      const response = await api(
+        "/api/v1/sos/events/" + encodeURIComponent(eventId)
+      );
+
+      if (!response.event || response.event.status !== "pending") {
+        throw new Error("That SOS event is no longer pending.");
+      }
+
+      flowLockRef.current = true;
+      cancelRequestedRef.current = { cancelled: false };
+      setRecovered(true);
+      setSource(response.event.source || "manual");
+      setOpen(true);
+      setEvent(response.event);
+      setError("");
+      setSosWatch(true);
+      lastLocationSyncAt.current = 0;
+      stopMic();
+      startWatching();
+      return true;
+    } catch (e) {
+      setError(e?.message || "Could not recover the SOS event.");
+      return false;
+    }
+  }, [active, open, user, startWatching, stopMic]);
+
   const closeFlow = useCallback(async () => {
     if (cancelRequestedRef.current) cancelRequestedRef.current.cancelled = true;
 
@@ -146,6 +178,7 @@ export default function usePhase4Core() {
     }
     if (sosWatch) stopWatching();
     setSosWatch(false);
+    setRecovered(false);
     setOpen(false);
     flowLockRef.current = false;
     cancelRequestedRef.current = null;
@@ -160,6 +193,7 @@ export default function usePhase4Core() {
       setEvent(response.event);
       stopWatching();
       setSosWatch(false);
+      setRecovered(false);
       await refresh();
     } catch (e) {
       setError(e.message);
@@ -206,6 +240,7 @@ export default function usePhase4Core() {
 
   const logout = useCallback(async () => {
     await signOut();
+    setRecovered(false);
     setUser(null);
     setContacts([]);
     setHistory([]);
@@ -213,9 +248,9 @@ export default function usePhase4Core() {
   }, []);
 
   return {
-    ready, user, contacts, history, active, setActive, open, event, source, error, setError,
+    ready, user, contacts, history, active, setActive, open, event, source, recovered, error, setError,
     authMsg, auth, logout, listening, clapCount, micError, location, locationError, watching,
-    sosWatch, startFlow, closeFlow, finish, startMic, stopMic, startWatching, stopWatching,
+    sosWatch, startFlow, recoverEvent, closeFlow, finish, startMic, stopMic, startWatching, stopWatching,
     add, remove, refresh,
   };
 }
