@@ -17,7 +17,7 @@ export default function Phase12DrillPanel({ report, running, error, onRun, user,
   const features = cloud?.features || {};
   const smsConfigured = cloud?.sms?.configured;
 
-  const backendReady = Boolean(cloud?.ok && cloud?.drill && cloud?.phase === "12");
+  const backendReady = Boolean(cloud?.ok && cloud?.drill && cloud?.phase === "13");
   const deviceReady = Boolean(browser.secureContext && browser.microphoneSupported && browser.locationSupported);
   const summary = report?.summary;
 
@@ -25,7 +25,7 @@ export default function Phase12DrillPanel({ report, running, error, onRun, user,
     <section className="panel phase12-panel">
       <div className="phase12-head">
         <div>
-          <span className="panel-kicker">PHASE 12 · SAFETY DRILL</span>
+          <span className="panel-kicker">PHASE 13 · SAFETY DRILL</span>
           <h2>Run a safe end-to-end drill</h2>
           <p>Tests browser readiness and the cloud safety boundary without creating an SOS event or sending an SMS.</p>
         </div>
