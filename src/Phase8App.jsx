@@ -229,6 +229,17 @@ export default function Phase8App() {
         user={c.user}
         online={p5.online}
       />
+      <Phase13RecoveryPanel
+        events={p13.events}
+        loading={p13.loading}
+        actionId={p13.actionId}
+        error={p13.error}
+        onRecover={p13.recover}
+        onCancel={p13.cancel}
+        onRefresh={p13.refresh}
+        user={c.user}
+        online={p5.online}
+      />
     </div>
   );
 
