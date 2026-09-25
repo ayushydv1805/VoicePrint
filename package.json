@@ -1,13 +1,13 @@
 {
   "name": "voiceprint",
   "private": true,
-  "version": "0.12.0",
+  "version": "0.13.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "verify:release": "node scripts/verify-phase12.mjs"
+    "verify:release": "node scripts/verify-phase13.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",
