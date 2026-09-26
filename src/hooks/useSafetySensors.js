@@ -7,6 +7,7 @@ export function useClapDetector(onTrigger) {
   const [listening, setListening] = useState(false);
   const [clapCount, setClapCount] = useState(0);
   const [micError, setMicError] = useState("");
+  const [micRecovering, setMicRecovering] = useState(false);
   const [lastClapAt, setLastClapAt] = useState(null);
   const streamRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -16,12 +17,28 @@ export function useClapDetector(onTrigger) {
   const lastDetectedRef = useRef(0);
   const previousAboveRef = useRef(false);
   const startingRef = useRef(false);
+  const shouldRecoverRef = useRef(false);
+  const restartTimerRef = useRef(null);
+  const startRef = useRef(null);
   const baselineRef = useRef(0.025);
   const onTriggerRef = useRef(onTrigger);
+
+  const scheduleRestart = useCallback(() => {
+    if (!shouldRecoverRef.current || restartTimerRef.current || streamRef.current || startingRef.current) return;
+    setMicRecovering(true);
+    restartTimerRef.current = window.setTimeout(() => {
+      restartTimerRef.current = null;
+      if (!shouldRecoverRef.current || streamRef.current || startingRef.current) return;
+      startRef.current?.();
+    }, 1000);
+  }, []);
 
   useEffect(() => { onTriggerRef.current = onTrigger; }, [onTrigger]);
 
   const stop = useCallback(() => {
+    shouldRecoverRef.current = false;
+    if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current);
+    restartTimerRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     if (streamRef.current) {
@@ -37,9 +54,11 @@ export function useClapDetector(onTrigger) {
     startingRef.current = false;
     setClapCount(0);
     setListening(false);
+    setMicRecovering(false);
   }, []);
 
   const start = useCallback(async () => {
+    shouldRecoverRef.current = true;
     if (streamRef.current || startingRef.current) return true;
     if (!navigator.mediaDevices?.getUserMedia) {
       setMicError("Microphone access is not supported in this browser.");
@@ -76,7 +95,18 @@ export function useClapDetector(onTrigger) {
       clapsRef.current = [];
       setClapCount(0);
       setListening(true);
+      setMicRecovering(false);
       startingRef.current = false;
+
+      const handleStreamEnded = () => {
+        if (!shouldRecoverRef.current) return;
+        setListening(false);
+        setClapCount(0);
+        scheduleRestart();
+      };
+      stream.getAudioTracks().forEach((track) => {
+        track.addEventListener?.("ended", handleStreamEnded);
+      });
 
       const timeData = new Float32Array(analyser.fftSize);
       const frequencyData = new Uint8Array(analyser.frequencyBinCount);
@@ -134,13 +164,45 @@ export function useClapDetector(onTrigger) {
         : error?.message || "Unable to start microphone detection.";
       setMicError(message);
       startingRef.current = false;
-      stop();
+      streamRef.current = null;
+      if (error?.name === "NotAllowedError" || error?.name === "SecurityError" || error?.name === "NotFoundError") {
+        shouldRecoverRef.current = false;
+        setMicRecovering(false);
+      } else if (shouldRecoverRef.current) {
+        scheduleRestart();
+      }
       return false;
     }
-  }, [stop]);
+  }, [scheduleRestart]);
+
+  useEffect(() => {
+    startRef.current = start;
+  }, [start]);
+
+  useEffect(() => {
+    const resume = async () => {
+      if (!shouldRecoverRef.current) return;
+      if (audioContextRef.current?.state === "suspended") {
+        try { await audioContextRef.current.resume(); } catch {}
+      }
+      if (!streamRef.current && !startingRef.current) start();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") resume();
+    };
+    const onPageShow = () => resume();
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, [start]);
 
   useEffect(() => stop, [stop]);
-  return { listening, clapCount, lastClapAt, micError, start, stop };
+  return { listening, clapCount, lastClapAt, micError, micRecovering, start, stop };
 }
 
 export function useDeviceLocation() {
