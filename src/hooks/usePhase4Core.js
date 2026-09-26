@@ -29,7 +29,7 @@ export default function usePhase4Core() {
   const flowLockRef = useRef(false);
   const cancelRequestedRef = useRef(null);
 
-  const { listening, clapCount, micError, start: startMic, stop: stopMic } =
+  const { listening, clapCount, micError, micRecovering, start: startMic, stop: stopMic } =
     useClapDetector(() => startFlow("three-clap"));
   const { location, locationError, watching, startWatching, stopWatching } = useDeviceLocation();
 
@@ -254,7 +254,7 @@ export default function usePhase4Core() {
 
   return {
     ready, user, contacts, history, active, setActive, open, event, source, recovered, error, setError,
-    authMsg, auth, logout, listening, clapCount, micError, location, locationError, watching,
+    authMsg, auth, logout, listening, clapCount, micError, micRecovering, location, locationError, watching,
     sosWatch, startFlow, recoverEvent, closeFlow, finish, startMic, stopMic, startWatching, stopWatching,
     add, remove, refresh,
   };
