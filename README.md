@@ -47,6 +47,28 @@ VoicePrint is designed for situations where a person may not be able to comforta
 
 ---
 
+# Phase 16 — Automatic microphone recovery
+
+## Phase 16 — Automatic microphone recovery
+
+Phase 15 made clap listening start automatically while Protection Mode is active. Phase 16 keeps that behavior running through common browser lifecycle interruptions.
+
+### What changed
+
+- If the active microphone stream ends unexpectedly, VoicePrint marks the monitor as recovering and attempts to reconnect automatically.
+- When the page becomes visible again, VoicePrint resumes a suspended Web Audio context and re-starts the microphone monitor when needed.
+- The app also handles page-show events such as returning from a browser back/forward cache.
+- A recovery status is visible on Home, Safety, and Settings so the UI does not silently appear ready while the microphone is reconnecting.
+- Protection Mode remains the master control: turning it off stops the monitor and disables automatic recovery.
+
+### Important browser limitation
+
+This is a browser-side recovery layer, not a native background service. Browsers and operating systems can still suspend or terminate microphone processing while an app is closed or heavily backgrounded. VoicePrint does not claim continuous background monitoring in those cases.
+
+The frontend and backend release is **0.16.0**, with PWA shell cache namespace **voiceprint-shell-v16**.
+
+---
+
 # Architecture
 
 ```mermaid
@@ -299,7 +321,7 @@ CORS_ORIGINS=https://your-vercel-domain.example
 ALERT_COOLDOWN_SECONDS=30
 LOCATION_UPDATE_MIN_SECONDS=5
 CONFIRMATION_WINDOW_SECONDS=10
-VOICEPRINT_RELEASE=phase-13
+VOICEPRINT_RELEASE=phase-16
 
 # Optional SMS delivery. Keep these server-side secrets private.
 TWILIO_ACCOUNT_SID=
