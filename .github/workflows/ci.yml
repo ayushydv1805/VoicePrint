@@ -37,5 +37,5 @@ jobs:
           node --check server/index.js
           node --check server/index-phase4.js
 
-      - name: Verify Phase 15 release
+      - name: Verify Phase 16 release
         run: npm run verify:release
