@@ -1001,3 +1001,20 @@ Phase 14 makes the Phase 13 recovery path proactive without automatically dispat
 The watch only discovers and surfaces pending events. It does not create an SOS event, send SMS, or contact public emergency services on its own.
 
 The release is version 0.14.0 and the PWA shell cache namespace is `voiceprint-shell-v14`.
+
+
+## Phase 15 Automatic Clap Listening
+
+Phase 15 changes the primary hands-free experience so the microphone monitor starts automatically when VoicePrint opens with Protection Mode active.
+
+### Behavior
+
+- No separate "Start listening" action is required.
+- When the app is ready and protection is active, VoicePrint requests microphone access and starts the three-clap detector automatically.
+- The Home, Safety Control, and Settings screens show the microphone as automatically monitored rather than requiring a start button.
+- The existing three sharp claps within the detector window still trigger the SOS flow.
+- Turning Protection Mode off stops microphone monitoring; turning it back on starts the monitor again.
+- A small startup guard prevents duplicate microphone streams if React or the browser causes the startup effect to run more than once.
+- Browser microphone permission is still required. Browsers may show a permission prompt when VoicePrint first starts the monitor.
+
+The release is version 0.15.0 and the PWA shell cache namespace is `voiceprint-shell-v15`.
