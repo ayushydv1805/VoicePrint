@@ -68,9 +68,11 @@ export function useClapDetector(onTrigger) {
     try {
       startingRef.current = true;
       setMicError("");
+      let acquiredStream;
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
+      acquiredStream = stream;
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) {
         stream.getTracks().forEach((track) => track.stop());
@@ -102,6 +104,12 @@ export function useClapDetector(onTrigger) {
         if (!shouldRecoverRef.current) return;
         setListening(false);
         setClapCount(0);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+        streamRef.current = null;
+        analyserRef.current = null;
+        audioContextRef.current?.close().catch(() => {});
+        audioContextRef.current = null;
         scheduleRestart();
       };
       stream.getAudioTracks().forEach((track) => {
