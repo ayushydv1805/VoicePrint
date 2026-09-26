@@ -34,7 +34,11 @@ export default function Phase14RecoveryBanner({
         <button
           className="ghost-btn"
           type="button"
-          onClick={() => onCancel(event.id)}
+          onClick={() => {
+            if (window.confirm("Cancel this pending VoicePrint SOS event? No new alert will be created.")) {
+              onCancel(event.id);
+            }
+          }}
           disabled={busy}
         >
           Cancel
