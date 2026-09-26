@@ -1,7 +1,7 @@
 export default function Phase4Home({user,active,listening,micRecovering,clapCount,contacts,location,watching,history,onEmergency,onLocation,onNav}){
   return <div className="page">
     <section className="hero"><div>
-      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 15</div>
+      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 16</div>
       <h1>When you can't<br/><span>reach your phone.</span></h1>
       <p className="hero-copy">Signed-in cloud storage keeps trusted contacts and event history available across sessions. Clap detection and GPS still run in the browser.</p>
       <div className="hero-actions"><button className="primary-btn" onClick={onEmergency}>✦ Test SOS</button><div className={micRecovering?"secondary-btn listening-btn recovering-btn":listening?"secondary-btn listening-btn":"secondary-btn"} aria-live="polite"><span className="mic-live-dot"/>{micRecovering?"Reconnecting microphone…":listening?`Always listening · ${clapCount}/3`:"Starting microphone…"}</div></div>
