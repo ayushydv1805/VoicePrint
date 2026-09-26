@@ -30,7 +30,7 @@ for (const marker of [
 }
 
 const core = fs.readFileSync("src/hooks/usePhase4Core.js", "utf8");
-if (!core.includes("if (!ready || !active || listening) return;") || !core.includes("startMic();")) {
+if (!core.includes("if (!ready || !active || open || listening) return;") || !core.includes("startMic();")) {
   throw new Error("Microphone automatic startup is missing");
 }
 if (!core.includes("micRecovering")) throw new Error("Microphone recovery state is not exposed by the core hook");
