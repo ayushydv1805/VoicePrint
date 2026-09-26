@@ -21,7 +21,7 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
 const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
-const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-14";
+const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-15";
 const DRILL_MODE = true;
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
@@ -581,7 +581,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "14",
+    phase: "15",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -613,6 +613,8 @@ app.get("/api/v1/status", (req, res) => {
       safeRecovery: true,
       proactiveRecovery: true,
       recoveryPollSeconds: 15,
+      automaticClapListening: true,
+      autoStartMicrophone: true,
     },
   });
 });
@@ -633,7 +635,7 @@ app.get("/api/v1/safety/drill", async (req, res) => {
 
     return res.json({
       ok: true,
-      phase: "14",
+      phase: "15",
       drill: true,
       userAuthenticated: true,
       trustedContactCount: Array.isArray(contacts) ? contacts.length : 0,
@@ -651,6 +653,7 @@ app.get("/api/v1/safety/drill", async (req, res) => {
         emergencyServicesDispatch: false,
         recovery: true,
         proactiveRecovery: true,
+        automaticClapListening: true,
       },
       guarantees: {
         createsSosEvent: false,

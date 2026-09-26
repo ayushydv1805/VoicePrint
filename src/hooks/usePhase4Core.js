@@ -66,6 +66,11 @@ export default function usePhase4Core() {
     if (!active) stopMic();
   }, [active, stopMic]);
 
+  useEffect(() => {
+    if (!ready || !active || listening) return;
+    startMic();
+  }, [ready, active, listening, startMic]);
+
   const startFlow = useCallback((src) => {
     if (!active || open || flowLockRef.current) return false;
 

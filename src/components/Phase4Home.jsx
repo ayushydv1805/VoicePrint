@@ -1,15 +1,15 @@
 export default function Phase4Home({user,active,listening,clapCount,contacts,location,watching,history,onEmergency,onMic,onLocation,onNav}){
   return <div className="page">
     <section className="hero"><div>
-      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 8</div>
+      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 15</div>
       <h1>When you can't<br/><span>reach your phone.</span></h1>
       <p className="hero-copy">Signed-in cloud storage keeps trusted contacts and event history available across sessions. Clap detection and GPS still run in the browser.</p>
-      <div className="hero-actions"><button className="primary-btn" onClick={onEmergency}>✦ Test SOS</button><button className={listening?"secondary-btn listening-btn":"secondary-btn"} onClick={onMic}><span className="mic-live-dot"/>{listening?`Listening · ${clapCount}/3`:"Start clap detection"}</button></div>
+      <div className="hero-actions"><button className="primary-btn" onClick={onEmergency}>✦ Test SOS</button><div className={listening?"secondary-btn listening-btn":"secondary-btn"} aria-live="polite"><span className="mic-live-dot"/>{listening?`Always listening · ${clapCount}/3`:"Starting microphone…"}</div></div>
       <div className="hero-meta"><span>{user?"✓ Signed in":"◌ Local demo"}</span><span>{contacts.length} contacts</span><span>{history.length} cloud events</span></div>
     </div><div className="hero-orb"><div className="orb-ring ring-one"/><div className="orb-ring ring-two"/><div className={listening?"orb-core listening-core":"orb-core"}><span>✦</span><span>{listening?"LISTENING":"READY"}</span></div></div></section>
 
     <section className="status-grid">
-      <Card title="Sound Detection" value={listening?"Listening":"Standby"} detail={listening?`${clapCount}/3 claps`:"3-clap trigger"} good={listening} onClick={onMic}/>
+      <Card title="Sound Detection" value={listening?"Listening":"Starting…"} detail={listening?`${clapCount}/3 claps · automatic`:"Requesting microphone access"} good={listening}/>
       <Card title="Location" value={watching?"Live":location?"Ready":"Off"} detail={watching?"High accuracy":"Tap to enable"} good={!!location} onClick={onLocation}/>
       <Card title="Trusted Contacts" value={String(contacts.length)} detail={user?"Cloud saved":"Sign in required"} good={contacts.length>0} onClick={()=>onNav("contacts")}/>
     </section>

@@ -98,7 +98,7 @@ export default function Phase8App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 14 · OPERATIONS</span>
+          <span className="panel-kicker">PHASE 15 · OPERATIONS</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -125,11 +125,9 @@ export default function Phase8App() {
           <div className="setting-item">
             <div>
               <strong>Microphone</strong>
-              <span>{c.listening ? `${c.clapCount}/3 claps detected` : "Ready for three-clap detection"}</span>
+              <span>{c.listening ? `${c.clapCount}/3 claps detected · always on` : "Starting automatically when protection is active"}</span>
             </div>
-            <button className="ghost-btn" onClick={() => (c.listening ? c.stopMic() : c.startMic())} disabled={!c.active}>
-              {c.listening ? "Stop" : "Start"}
-            </button>
+            <span className={c.listening ? "setting-state good" : "setting-state"}>{c.listening ? "LISTENING" : "STARTING"}</span>
           </div>
           {c.micError && <div className="setting-error">🎙 {c.micError}</div>}
 
@@ -333,7 +331,6 @@ export default function Phase8App() {
                 watching={c.watching}
                 history={c.history}
                 onEmergency={() => c.startFlow("manual")}
-                onMic={() => (c.listening ? c.stopMic() : c.startMic())}
                 onLocation={() => (c.watching ? c.stopWatching() : c.startWatching())}
                 onNav={setPage}
               />
