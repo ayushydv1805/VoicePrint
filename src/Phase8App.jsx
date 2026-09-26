@@ -331,7 +331,6 @@ export default function Phase8App() {
                 watching={c.watching}
                 history={c.history}
                 onEmergency={() => c.startFlow("manual")}
-                onMic={() => (c.listening ? c.stopMic() : c.startMic())}
                 onLocation={() => (c.watching ? c.stopWatching() : c.startWatching())}
                 onNav={setPage}
               />
