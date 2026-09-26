@@ -15,6 +15,7 @@ export function useClapDetector(onTrigger) {
   const clapsRef = useRef([]);
   const lastDetectedRef = useRef(0);
   const previousAboveRef = useRef(false);
+  const startingRef = useRef(false);
   const baselineRef = useRef(0.025);
   const onTriggerRef = useRef(onTrigger);
 
@@ -33,17 +34,20 @@ export function useClapDetector(onTrigger) {
     }
     analyserRef.current = null;
     clapsRef.current = [];
+    startingRef.current = false;
     setClapCount(0);
     setListening(false);
   }, []);
 
   const start = useCallback(async () => {
+    if (streamRef.current || startingRef.current) return true;
     if (!navigator.mediaDevices?.getUserMedia) {
       setMicError("Microphone access is not supported in this browser.");
       return false;
     }
 
     try {
+      startingRef.current = true;
       setMicError("");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
@@ -52,6 +56,7 @@ export function useClapDetector(onTrigger) {
       if (!AudioContextClass) {
         stream.getTracks().forEach((track) => track.stop());
         setMicError("Web Audio is not supported in this browser.");
+        startingRef.current = false;
         return false;
       }
 
@@ -71,6 +76,7 @@ export function useClapDetector(onTrigger) {
       clapsRef.current = [];
       setClapCount(0);
       setListening(true);
+      startingRef.current = false;
 
       const timeData = new Float32Array(analyser.fftSize);
       const frequencyData = new Uint8Array(analyser.frequencyBinCount);
@@ -127,6 +133,7 @@ export function useClapDetector(onTrigger) {
         ? "Microphone permission was denied. Allow microphone access and try again."
         : error?.message || "Unable to start microphone detection.";
       setMicError(message);
+      startingRef.current = false;
       stop();
       return false;
     }
