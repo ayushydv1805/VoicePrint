@@ -67,7 +67,7 @@ export default function usePhase4Core() {
   }, [active, stopMic]);
 
   useEffect(() => {
-    if (!ready || !active || listening) return;
+    if (!ready || !active || open || listening) return;
     startMic();
   }, [ready, active, listening, startMic]);
 
