@@ -248,3 +248,9 @@
 .sos-auto-status span{width:8px;height:8px;border-radius:50%;background:#6b7280}
 .sos-auto-status.active{border-color:rgba(52,211,153,.16);background:rgba(52,211,153,.045);color:#87e8bd}
 .sos-auto-status.active span{background:#34d399;box-shadow:0 0 12px rgba(52,211,153,.45)}
+
+
+/* Phase 16 automatic microphone recovery */
+.recovering-btn{border-color:rgba(124,108,255,.22)!important;color:#a69cff!important;background:rgba(124,108,255,.06)!important}
+.recovering-btn .mic-live-dot{animation:voiceprint-recover-pulse 1s ease-in-out infinite}
+@keyframes voiceprint-recover-pulse{0%,100%{opacity:.45;transform:scale(.86)}50%{opacity:1;transform:scale(1.08)}}
