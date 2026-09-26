@@ -1,4 +1,4 @@
-const CACHE = "voiceprint-shell-v13";
+const CACHE = "voiceprint-shell-v14";
 const CORE = ["/", "/index.html", "/manifest.webmanifest", "/voiceprint-icon.svg"];
 
 self.addEventListener("install", (event) => {

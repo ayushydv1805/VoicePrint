@@ -19,8 +19,9 @@ import usePhase10Readiness from "./hooks/usePhase10Readiness";
 import Phase10ReadinessPanel from "./components/Phase10ReadinessPanel";
 import usePhase12Drill from "./hooks/usePhase12Drill";
 import Phase12DrillPanel from "./components/Phase12DrillPanel";
-import usePhase13Recovery from "./hooks/usePhase13Recovery";
-import Phase13RecoveryPanel from "./components/Phase13RecoveryPanel";
+import usePhase14RecoveryWatch from "./hooks/usePhase14RecoveryWatch";
+import Phase14RecoveryWatchPanel from "./components/Phase14RecoveryWatchPanel";
+import Phase14RecoveryBanner from "./components/Phase14RecoveryBanner";
 
 const tabs = [
   ["home", "Home", "⌂"],
@@ -57,7 +58,7 @@ export default function Phase8App() {
   });
   const p10 = usePhase10Readiness({ user: c.user, contacts: c.contacts, online: p5.online });
   const p12 = usePhase12Drill({ user: c.user, contacts: c.contacts, online: p5.online, location: c.location });
-  const p13 = usePhase13Recovery({ user: c.user, online: p5.online, onRecover: c.recoverEvent });
+  const p14 = usePhase14RecoveryWatch({ user: c.user, online: p5.online, onRecover: c.recoverEvent });
 
   useEffect(() => {
     if (!c.open || !c.event?.id || !c.user) return;
@@ -92,7 +93,7 @@ export default function Phase8App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 13 · OPERATIONS</span>
+          <span className="panel-kicker">PHASE 14 · OPERATIONS</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -229,14 +230,17 @@ export default function Phase8App() {
         user={c.user}
         online={p5.online}
       />
-      <Phase13RecoveryPanel
-        events={p13.events}
-        loading={p13.loading}
-        actionId={p13.actionId}
-        error={p13.error}
-        onRecover={p13.recover}
-        onCancel={p13.cancel}
-        onRefresh={p13.refresh}
+      <Phase14RecoveryWatchPanel
+        events={p14.events}
+        loading={p14.loading}
+        actionId={p14.actionId}
+        error={p14.error}
+        checkedAt={p14.checkedAt}
+        confirmationWindowSeconds={p14.confirmationWindowSeconds}
+        autoMonitoring={p14.autoMonitoring}
+        onRecover={p14.recover}
+        onCancel={p14.cancel}
+        onRefresh={p14.refresh}
         user={c.user}
         online={p5.online}
       />
@@ -274,6 +278,15 @@ export default function Phase8App() {
         </div>
       </header>
 
+      {!c.open && p14.events?.[0] && (
+        <Phase14RecoveryBanner
+          event={p14.events[0]}
+          actionId={p14.actionId}
+          onRecover={p14.recover}
+          onCancel={p14.cancel}
+        />
+      )}
+
       <div className="layout">
         <aside className="sidebar">
           <div className="sidebar-label">CONTROL CENTER</div>
@@ -298,7 +311,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.13 · Phase 13</span>
+            <span className="version">VoicePrint v0.14 · Phase 14</span>
           </div>
         </aside>
 
