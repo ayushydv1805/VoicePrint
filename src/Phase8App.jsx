@@ -125,11 +125,9 @@ export default function Phase8App() {
           <div className="setting-item">
             <div>
               <strong>Microphone</strong>
-              <span>{c.listening ? `${c.clapCount}/3 claps detected` : "Ready for three-clap detection"}</span>
+              <span>{c.listening ? `${c.clapCount}/3 claps detected · always on` : "Starting automatically when protection is active"}</span>
             </div>
-            <button className="ghost-btn" onClick={() => (c.listening ? c.stopMic() : c.startMic())} disabled={!c.active}>
-              {c.listening ? "Stop" : "Start"}
-            </button>
+            <span className={c.listening ? "setting-state good" : "setting-state"}>{c.listening ? "LISTENING" : "STARTING"}</span>
           </div>
           {c.micError && <div className="setting-error">🎙 {c.micError}</div>}
 
