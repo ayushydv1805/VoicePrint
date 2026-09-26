@@ -61,6 +61,11 @@ export default function Phase8App() {
   const p14 = usePhase14RecoveryWatch({ user: c.user, online: p5.online, onRecover: c.recoverEvent });
 
   useEffect(() => {
+    if (!c.user || !p5.online || c.open || !c.event?.id) return;
+    p14.refresh();
+  }, [c.user, p5.online, c.open, c.event?.id, c.event?.status, p14.refresh]);
+
+  useEffect(() => {
     if (!c.open || !c.event?.id || !c.user) return;
     const key = `${c.event.id}:${c.event.status}`;
     if (lastNotificationRef.current === key) return;
