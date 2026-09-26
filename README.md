@@ -760,7 +760,7 @@ Test:
 
 ## Deployment parity
 
-The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 + Phase 11 + Phase 12 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
+The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 + Phase 11 + Phase 12 + Phase 13 + Phase 14 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
 
 
 ## Frontend — Vercel
@@ -834,6 +834,8 @@ Before real-world use, verify:
 | Phase 10 | Safety pre-flight readiness center, database RLS activation, release markers and automated readiness verification |
 | Phase 11 | Bounded trusted-contact SMS retries, delivery attempt auditing, honest provider state and RLS performance tuning |
 | Phase 12 | Non-delivery safety drill, authenticated diagnostics and release verification |
+| Phase 13 | Interrupted-session recovery for authenticated pending SOS events |
+| Phase 14 | Proactive recovery monitoring, startup visibility and cross-tab/session awareness |
 
 ---
 
@@ -979,3 +981,23 @@ Phase 13 adds a recovery path for authenticated pending SOS events that survive 
 - A user can cancel a recovered event from Settings without creating another event.
 
 The release is version 0.13.0 and the PWA shell cache namespace is `voiceprint-shell-v13`.
+
+
+## Phase 14 Proactive Recovery Watch
+
+Phase 14 makes the Phase 13 recovery path proactive without automatically dispatching an alert.
+
+### Continuous recovery monitoring
+
+- Authenticated clients poll `GET /api/v1/sos/active` every 15 seconds while online.
+- The Settings recovery center shows whether automatic monitoring is active and when it last checked the cloud queue.
+- Pending-event age and the confirmation-gate countdown update locally so the review state stays visible between cloud polls.
+- A top-level recovery banner appears when a pending SOS exists and the main SOS modal is closed.
+- The banner provides explicit **Review** and **Cancel** actions; it never dispatches automatically.
+- The recovery watch is user-scoped through the existing authenticated endpoint and reuses the existing SOS event ID.
+
+### Safety boundary
+
+The watch only discovers and surfaces pending events. It does not create an SOS event, send SMS, or contact public emergency services on its own.
+
+The release is version 0.14.0 and the PWA shell cache namespace is `voiceprint-shell-v14`.
