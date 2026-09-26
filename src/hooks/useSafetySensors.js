@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const WINDOW_MS = 3000;
-const REFRACTORY_MS = 350;
+const REFRACTORY_MS = 350; // Phase 16
 
 export function useClapDetector(onTrigger) {
   const [listening, setListening] = useState(false);
