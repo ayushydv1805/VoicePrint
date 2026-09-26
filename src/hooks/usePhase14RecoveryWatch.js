@@ -3,14 +3,13 @@ import { api } from "../lib/apiAuth";
 
 const POLL_MS = 15000;
 
-export default function usePhase14RecoveryWatch({ user, online, onRecover, onOpen, open = false }) {
+export default function usePhase14RecoveryWatch({ user, online, onRecover }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionId, setActionId] = useState("");
   const [error, setError] = useState("");
   const [checkedAt, setCheckedAt] = useState(null);
-  const [autoOpenedId, setAutoOpenedId] = useState("");
-  const initialLoadRef = useRef(true);
+  const [confirmationWindowSeconds, setConfirmationWindowSeconds] = useState(10);
 
   const refresh = useCallback(async () => {
     if (!user || !online) {
@@ -26,6 +25,7 @@ export default function usePhase14RecoveryWatch({ user, online, onRecover, onOpe
       const response = await api("/api/v1/sos/active");
       const nextEvents = Array.isArray(response.events) ? response.events : [];
       setEvents(nextEvents);
+      setConfirmationWindowSeconds(Number(response.confirmationWindowSeconds) || 10);
       setCheckedAt(new Date().toISOString());
       return nextEvents;
     } catch (e) {
@@ -36,10 +36,6 @@ export default function usePhase14RecoveryWatch({ user, online, onRecover, onOpe
     }
   }, [user, online]);
 
-  useEffect(() => {
-    initialLoadRef.current = true;
-    setAutoOpenedId("");
-  }, [user?.id, online]);
 
   useEffect(() => {
     refresh();
@@ -112,6 +108,7 @@ export default function usePhase14RecoveryWatch({ user, online, onRecover, onOpe
     actionId,
     error,
     checkedAt,
+    confirmationWindowSeconds,
     autoMonitoring: Boolean(user && online),
     refresh,
     recover,
