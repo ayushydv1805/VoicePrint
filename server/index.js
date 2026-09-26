@@ -638,7 +638,7 @@ app.get("/api/v1/safety/drill", async (req, res) => {
 
     return res.json({
       ok: true,
-      phase: "15",
+      phase: "16",
       drill: true,
       userAuthenticated: true,
       trustedContactCount: Array.isArray(contacts) ? contacts.length : 0,
