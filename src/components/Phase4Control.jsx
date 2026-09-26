@@ -1,6 +1,6 @@
 export default function Phase4Control({user,listening,count,onStart,onTest}){
   return <div className="page">
-    <div className="page-heading"><div><span className="panel-kicker">CONTROL CENTER</span><h1>Safety control</h1><p>{user?"Cloud session connected.":"Local demo mode."}</p></div></div>
+    <div className="page-heading"><div><span className="panel-kicker">PHASE 15 · CONTROL CENTER</span><h1>Safety control</h1><p>{user?"Cloud session connected.":"Local demo mode."}</p></div></div>
     <div className="emergency-layout"><div className="emergency-card">
       <div className="sos-symbol">✦</div><h2>{listening?`Pattern monitor · ${count}/3`:"System ready"}</h2>
       <p>{listening?"Make three distinct sharp claps within about three seconds.":"The microphone monitor starts automatically when protection is active."}</p>
