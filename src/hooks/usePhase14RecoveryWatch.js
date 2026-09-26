@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../lib/apiAuth";
 
 const POLL_MS = 15000;
@@ -48,18 +48,6 @@ export default function usePhase14RecoveryWatch({ user, online, onRecover }) {
     }, POLL_MS);
     return () => window.clearInterval(timer);
   }, [user, online, refresh]);
-
-  useEffect(() => {
-    if (!user || !online || open || !initialLoadRef.current || !onOpen) return;
-    initialLoadRef.current = false;
-
-    refresh().then((nextEvents) => {
-      if (nextEvents.length === 1 && nextEvents[0].id !== autoOpenedId) {
-        setAutoOpenedId(nextEvents[0].id);
-        onOpen(nextEvents[0]);
-      }
-    });
-  }, [user, online, open, onOpen, refresh, autoOpenedId]);
 
   const recover = useCallback(
     async (eventId) => {
