@@ -20,6 +20,7 @@ export default function Phase14RecoveryWatchPanel({
   actionId,
   error,
   checkedAt,
+  confirmationWindowSeconds,
   autoMonitoring,
   onRecover,
   onCancel,
@@ -109,7 +110,7 @@ export default function Phase14RecoveryWatchPanel({
             const createdAt = Date.parse(event.createdAt || "");
             const remaining = Number(event.confirmationRemainingSeconds || 0);
             const liveRemaining = Number.isFinite(createdAt)
-              ? Math.max(0, Math.ceil((10000 - (now - createdAt)) / 1000))
+              ? Math.max(0, Math.ceil((confirmationWindowSeconds * 1000 - (now - createdAt)) / 1000))
               : remaining;
             const gate = Math.max(0, Math.min(remaining, liveRemaining));
 
