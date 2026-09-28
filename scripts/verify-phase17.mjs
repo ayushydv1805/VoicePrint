@@ -9,6 +9,8 @@ const requiredFiles = [
   "src/components/Phase4Control.jsx",
   "src/components/Phase4Modal.jsx",
   "src/lib/apiAuth.js",
+  "src/hooks/usePhase8DeploymentStatus.js",
+  "src/hooks/usePhase10Readiness.js",
   "public/sw.js",
   "server/index.js",
   "server/index-phase4.js",
@@ -52,6 +54,19 @@ if (!api.includes("https://voiceprint-api.onrender.com")) {
 }
 if (api.includes("https://voiceprint-api-v4.onrender.com")) {
   throw new Error("Legacy Render API must not be the frontend default");
+}
+
+for (const file of ["src/hooks/usePhase8DeploymentStatus.js", "src/hooks/usePhase10Readiness.js"]) {
+  const source = fs.readFileSync(file, "utf8");
+  if (!source.includes("https://voiceprint-api.onrender.com")) {
+    throw new Error("Primary Render API default is missing in " + file);
+  }
+  if (source.includes("voiceprint-api-v4.onrender.com")) {
+    throw new Error("Legacy Render API is still referenced by " + file);
+  }
+  if (!source.includes('phase-17')) {
+    throw new Error("Phase 17 readiness parity is missing in " + file);
+  }
 }
 
 const app = fs.readFileSync("src/Phase8App.jsx", "utf8");
