@@ -1,6 +1,6 @@
 import { getAccessToken, refreshSession } from "./auth";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://voiceprint-api-v4.onrender.com").replace(/\/$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://voiceprint-api.onrender.com").replace(/\/$/, "");
 const REQUEST_TIMEOUT_MS = 12000;
 
 function makeRequestId() {
