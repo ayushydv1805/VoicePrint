@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../lib/apiAuth";
 
 const API_BASE_URL = (
-  import.meta.env.VITE_API_URL || "https://voiceprint-api-v4.onrender.com"
+  import.meta.env.VITE_API_URL || "https://voiceprint-api.onrender.com"
 ).replace(/\/$/, "");
 
 async function permissionState(name) {
@@ -72,7 +72,7 @@ export default function usePhase10Readiness({ user, contacts, online }) {
         cloud: {
           reachable: healthResponse.ok && health?.ok === true,
           release: health?.version || "unknown",
-          releaseParity: health?.version === "phase-14",
+          releaseParity: health?.version === "phase-17",
           requestTracing: Boolean(health?.requestId),
           authReady: Boolean(user),
           status,
