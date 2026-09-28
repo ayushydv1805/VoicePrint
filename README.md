@@ -1062,3 +1062,5 @@ Phase 17 focuses on confirmation timing, microphone-state clarity, production de
 Phase 17 does not change the underlying browser limitation: a web app cannot guarantee microphone processing while it is fully closed or suspended by the operating system.
 
 The release is version 0.17.0.
+
+<!-- Phase 17 release verification: frontend/backend timing and UI polish deployed -->
