@@ -61,6 +61,8 @@ export function useClapDetector(onTrigger) {
     shouldRecoverRef.current = true;
     if (streamRef.current || startingRef.current) return true;
     if (!navigator.mediaDevices?.getUserMedia) {
+      shouldRecoverRef.current = false;
+      setMicRecovering(false);
       setMicError("Microphone access is not supported in this browser.");
       return false;
     }
@@ -69,7 +71,6 @@ export function useClapDetector(onTrigger) {
     try {
       startingRef.current = true;
       setMicError("");
-      let acquiredStream;
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
@@ -77,6 +78,8 @@ export function useClapDetector(onTrigger) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) {
         stream.getTracks().forEach((track) => track.stop());
+        shouldRecoverRef.current = false;
+        setMicRecovering(false);
         setMicError("Web Audio is not supported in this browser.");
         startingRef.current = false;
         return false;
