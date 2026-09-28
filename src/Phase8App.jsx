@@ -98,7 +98,7 @@ export default function Phase8App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 16 · OPERATIONS</span>
+          <span className="panel-kicker">PHASE 17 · OPERATIONS</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -314,7 +314,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.16 · Phase 16</span>
+            <span className="version">VoicePrint v0.17 · Phase 17</span>
           </div>
         </aside>
 
