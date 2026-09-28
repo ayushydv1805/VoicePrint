@@ -21,7 +21,7 @@ const LOCATION_UPDATE_MIN_MS = Math.max(
   Number(process.env.LOCATION_UPDATE_MIN_SECONDS || 5) * 1000
 );
 const SUPABASE_RLS_ENFORCED = process.env.SUPABASE_RLS_ENFORCED === "true";
-const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-16";
+const RELEASE_VERSION = process.env.VOICEPRINT_RELEASE || "phase-17";
 const DRILL_MODE = true;
 const CONFIRMATION_WINDOW_MS = Math.max(
   0,
@@ -222,12 +222,20 @@ function tokenFrom(req) {
 }
 
 function eventPublic(row) {
+  const createdAtMs = Date.parse(row.created_at || "");
+  const confirmationRemainingMs =
+    Number.isFinite(createdAtMs)
+      ? CONFIRMATION_WINDOW_MS - (Date.now() - createdAtMs)
+      : 0;
+
   return {
     id: row.id,
     source: row.source,
     status: row.status,
     createdAt: row.created_at,
     dispatchedAt: row.dispatched_at,
+    confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
+    confirmationRemainingSeconds: Math.max(0, Math.ceil(confirmationRemainingMs / 1000)),
     cancelledAt: row.cancelled_at,
     location:
       row.latitude == null
@@ -581,7 +589,7 @@ app.get("/api/health", (req, res) => {
 app.get("/api/v1/status", (req, res) => {
   res.json({
     ok: true,
-    phase: "16",
+    phase: "17",
     requestId: req.requestId,
     confirmationWindowSeconds: CONFIRMATION_WINDOW_MS / 1000,
     locationUpdateMinSeconds: LOCATION_UPDATE_MIN_MS / 1000,
@@ -618,6 +626,8 @@ app.get("/api/v1/status", (req, res) => {
       microphoneAutoRecovery: true,
       visibilityResume: true,
       streamInterruptionRecovery: true,
+      serverTimedConfirmation: true,
+      deploymentSafeDefaults: true,
     },
   });
 });
@@ -638,7 +648,7 @@ app.get("/api/v1/safety/drill", async (req, res) => {
 
     return res.json({
       ok: true,
-      phase: "16",
+      phase: "17",
       drill: true,
       userAuthenticated: true,
       trustedContactCount: Array.isArray(contacts) ? contacts.length : 0,
@@ -660,6 +670,8 @@ app.get("/api/v1/safety/drill", async (req, res) => {
         microphoneAutoRecovery: true,
         visibilityResume: true,
         streamInterruptionRecovery: true,
+        serverTimedConfirmation: true,
+        deploymentSafeDefaults: true,
       },
       guarantees: {
         createsSosEvent: false,
