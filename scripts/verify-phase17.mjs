@@ -41,6 +41,11 @@ if (!modal.includes("confirmationRemainingSeconds")) {
   throw new Error("SOS modal is not using server-timed confirmation data");
 }
 
+const contacts = fs.readFileSync("src/components/Phase4Contacts.jsx", "utf8");
+if (!contacts.includes("/^\\+[1-9][0-9]{7,14}$/")) {
+  throw new Error("Trusted-contact E.164 validation is malformed");
+}
+
 const api = fs.readFileSync("src/lib/apiAuth.js", "utf8");
 if (!api.includes("https://voiceprint-api.onrender.com")) {
   throw new Error("Primary Render API is not the frontend default");
