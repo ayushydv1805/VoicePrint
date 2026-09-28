@@ -65,6 +65,7 @@ export function useClapDetector(onTrigger) {
       return false;
     }
 
+    let acquiredStream = null;
     try {
       startingRef.current = true;
       setMicError("");
@@ -72,6 +73,7 @@ export function useClapDetector(onTrigger) {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
+      acquiredStream = stream;
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) {
         stream.getTracks().forEach((track) => track.stop());
@@ -171,6 +173,9 @@ export function useClapDetector(onTrigger) {
         : error?.message || "Unable to start microphone detection.";
       setMicError(message);
       startingRef.current = false;
+      if (acquiredStream) {
+        acquiredStream.getTracks().forEach((track) => track.stop());
+      }
       streamRef.current = null;
       if (error?.name === "NotAllowedError" || error?.name === "SecurityError" || error?.name === "NotFoundError") {
         shouldRecoverRef.current = false;
