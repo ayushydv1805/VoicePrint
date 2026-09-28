@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 const API_BASE_URL = (
-  import.meta.env.VITE_API_URL || "https://voiceprint-api-v4.onrender.com"
+  import.meta.env.VITE_API_URL || "https://voiceprint-api.onrender.com"
 ).replace(/\/$/, "");
 
 function headerReport(headers) {
@@ -57,7 +57,7 @@ export default function usePhase8DeploymentStatus() {
         api: {
           reachable: apiResponse.ok && apiBody?.ok === true,
           phase: apiBody?.version || "unknown",
-          releaseParity: apiBody?.version === "phase-14",
+          releaseParity: apiBody?.version === "phase-17",
           noStore: (apiResponse.headers.get("Cache-Control") || "").toLowerCase().includes("no-store"),
           requestTracing: Boolean(apiBody?.requestId),
         },
