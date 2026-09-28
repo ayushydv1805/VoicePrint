@@ -306,7 +306,7 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
 ```
 
-The current code also contains safe development defaults for the configured VoicePrint Supabase project and Render API.
+The current code also contains safe development defaults for the configured VoicePrint Supabase project and primary Render API.
 
 **Never place Twilio secrets in frontend environment variables.**
 
@@ -321,7 +321,7 @@ CORS_ORIGINS=https://your-vercel-domain.example
 ALERT_COOLDOWN_SECONDS=30
 LOCATION_UPDATE_MIN_SECONDS=5
 CONFIRMATION_WINDOW_SECONDS=10
-VOICEPRINT_RELEASE=phase-16
+VOICEPRINT_RELEASE=phase-17
 
 # Optional SMS delivery. Keep these server-side secrets private.
 TWILIO_ACCOUNT_SID=
@@ -729,7 +729,7 @@ The application already scopes backend queries by authenticated user ID, but app
 
 1. Open the app on a device with a microphone.
 2. Allow microphone access.
-3. Start clap detection.
+3. Keep Protection Mode active; microphone monitoring starts automatically.
 4. Make three distinct sharp claps.
 5. Confirm the SOS flow opens.
 
@@ -782,7 +782,7 @@ Test:
 
 ## Deployment parity
 
-The `main` branch contains the cumulative Phase 6 + Phase 7 + Phase 8 + Phase 9 + Phase 10 + Phase 11 + Phase 12 + Phase 13 + Phase 14 frontend release. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
+The `main` branch contains the cumulative VoicePrint release through Phase 17. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
 
 
 ## Frontend — Vercel
@@ -858,6 +858,9 @@ Before real-world use, verify:
 | Phase 12 | Non-delivery safety drill, authenticated diagnostics and release verification |
 | Phase 13 | Interrupted-session recovery for authenticated pending SOS events |
 | Phase 14 | Proactive recovery monitoring, startup visibility and cross-tab/session awareness |
+| Phase 15 | Automatic microphone listening without a manual start action |
+| Phase 16 | Automatic microphone recovery after lifecycle interruptions |
+| Phase 17 | Production timing alignment, API default cleanup and responsive visual polish |
 
 ---
 
@@ -1040,3 +1043,22 @@ Phase 15 changes the primary hands-free experience so the microphone monitor sta
 - Browser microphone permission is still required. Browsers may show a permission prompt when VoicePrint first starts the monitor.
 
 The release is version 0.15.0 and the PWA shell cache namespace is `voiceprint-shell-v15`.
+
+# Phase 17 — production polish and timing reliability
+
+Phase 17 focuses on confirmation timing, microphone-state clarity, production defaults, and responsive visual polish.
+
+### What changed
+
+- The SOS modal now uses the server's confirmation-window timing instead of assuming a fixed client-side countdown.
+- The frontend now points to the primary Render API by default instead of the legacy API hostname.
+- Microphone recovery state is surfaced consistently so an interrupted stream is not presented as silently healthy.
+- Home, Safety, Settings, and the SOS modal received a visual polish pass with clearer hierarchy, spacing, glass panels, hover states, and improved mobile behavior.
+- The release verification script now checks Phase 17 timing, API-default, recovery, cache, and version markers.
+- The PWA shell cache namespace is voiceprint-shell-v17.
+
+### Browser boundary
+
+Phase 17 does not change the underlying browser limitation: a web app cannot guarantee microphone processing while it is fully closed or suspended by the operating system.
+
+The release is version 0.17.0.
