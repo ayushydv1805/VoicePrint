@@ -314,7 +314,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.18 · Phase 17</span>
+            <span className="version">VoicePrint v0.18 · Phase 18</span>
           </div>
         </aside>
 
