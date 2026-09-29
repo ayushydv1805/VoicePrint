@@ -18,7 +18,7 @@ export default function Phase19SensorDiagnostics({
         <div>
           <span className="panel-kicker">PHASE 19 · SENSOR TELEMETRY</span>
           <h2>Microphone diagnostics</h2>
-          <p>Live status only. VoicePrint does not upload or store microphone audio.</p>
+          <p>Local status only. VoicePrint does not upload or store microphone audio.</p>
         </div>
         <span className={listening && !micRecovering ? "phase19-state good" : "phase19-state"}>{state}</span>
       </div>
