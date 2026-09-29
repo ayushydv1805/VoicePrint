@@ -22,6 +22,7 @@ import Phase12DrillPanel from "./components/Phase12DrillPanel";
 import usePhase14RecoveryWatch from "./hooks/usePhase14RecoveryWatch";
 import Phase14RecoveryWatchPanel from "./components/Phase14RecoveryWatchPanel";
 import Phase14RecoveryBanner from "./components/Phase14RecoveryBanner";
+import Phase19SensorDiagnostics from "./components/Phase19SensorDiagnostics";
 
 const tabs = [
   ["home", "Home", "⌂"],
@@ -98,7 +99,7 @@ export default function Phase8App() {
     <div className="page">
       <div className="page-heading">
         <div>
-          <span className="panel-kicker">PHASE 18 · OPERATIONS</span>
+          <span className="panel-kicker">PHASE 19 · OPERATIONS</span>
           <h1>Safety & reliability</h1>
           <p>Control detection, device readiness and cloud account access.</p>
         </div>
@@ -314,7 +315,7 @@ export default function Phase8App() {
                 <span>{c.user ? "Signed in" : "Sign in to save data"}</span>
               </div>
             </div>
-            <span className="version">VoicePrint v0.18 · Phase 18</span>
+            <span className="version">VoicePrint v0.19 · Phase 19</span>
           </div>
         </aside>
 
@@ -327,6 +328,7 @@ export default function Phase8App() {
                 listening={c.listening}
                 micRecovering={c.micRecovering}
                 calibrating={c.calibrating}
+                signalLevel={c.signalLevel}
                 clapCount={c.clapCount}
                 contacts={c.contacts}
                 location={c.location}
