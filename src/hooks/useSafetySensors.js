@@ -164,10 +164,7 @@ export function useClapDetector(onTrigger) {
 
         const dynamicThreshold = Math.max(0.075, baselineRef.current * 3.8);
         const now = performance.now();
-        const calibratingNow = now < calibrationUntilRef.current;
-        if (calibratingNow !== (calibrationUntilRef.current > 0 && now < calibrationUntilRef.current)) {
-          setCalibrating(calibratingNow);
-        }
+        const calibratingNow = calibrationUntilRef.current > 0 && now < calibrationUntilRef.current;
         if (calibrationUntilRef.current && now >= calibrationUntilRef.current) {
           calibrationUntilRef.current = 0;
           setCalibrating(false);
