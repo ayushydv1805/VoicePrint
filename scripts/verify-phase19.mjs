@@ -50,7 +50,7 @@ for (const marker of ["micRecovering", "calibrating", "signalLevel", "lastClapAt
 }
 
 const telemetry = fs.readFileSync("src/components/Phase19SensorDiagnostics.jsx", "utf8");
-for (const marker of ["Microphone diagnostics", "Live input level", "does not upload or store microphone audio", "signalLevel"]) {
+for (const marker of ["Microphone diagnostics", "LIVE INPUT LEVEL", "does not upload or store microphone audio", "signalLevel"]) {
   if (!telemetry.includes(marker)) throw new Error("Telemetry UI marker missing: " + marker);
 }
 
