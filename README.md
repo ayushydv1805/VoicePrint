@@ -69,6 +69,26 @@ The frontend and backend release is **0.16.0**, with PWA shell cache namespace *
 
 ---
 
+
+# Phase 19 — Sensor telemetry & production cleanup
+
+Phase 19 adds a small, privacy-safe sensor diagnostics layer and tightens the production release wiring.
+
+### Sensor diagnostics
+- Settings now shows live microphone input level, current clap progress, last detected clap time, and the active sensor state.
+- Telemetry is derived locally from the existing Web Audio analyser. VoicePrint does not upload or store microphone audio.
+- UI updates for the live level are throttled so the React interface is not forced to re-render on every audio frame.
+
+### Production consistency
+- Frontend and backend are released as **0.19.0 / Phase 19**.
+- Deployment/readiness checks expect the Phase 19 backend release.
+- The legacy Render API is removed from the frontend Content Security Policy.
+- The PWA shell cache namespace is **voiceprint-shell-v19**.
+- The release verifier is **scripts/verify-phase19.mjs**.
+
+### Safety note
+Sensor telemetry is diagnostic UI only. The browser still controls microphone permissions and can suspend or terminate background processing. The current system remains a safety-assistance prototype and does not directly dispatch public emergency responders.
+
 # Architecture
 
 ```mermaid
