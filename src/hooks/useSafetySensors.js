@@ -8,6 +8,7 @@ export function useClapDetector(onTrigger) {
   const [clapCount, setClapCount] = useState(0);
   const [micError, setMicError] = useState("");
   const [micRecovering, setMicRecovering] = useState(false);
+  const [calibrating, setCalibrating] = useState(false);
   const [lastClapAt, setLastClapAt] = useState(null);
   const streamRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -16,6 +17,10 @@ export function useClapDetector(onTrigger) {
   const clapsRef = useRef([]);
   const lastDetectedRef = useRef(0);
   const previousAboveRef = useRef(false);
+  const aboveSinceRef = useRef(0);
+  const peakRmsRef = useRef(0);
+  const peakHighFrequencyRef = useRef(0);
+  const calibrationUntilRef = useRef(0);
   const startingRef = useRef(false);
   const shouldRecoverRef = useRef(false);
   const restartTimerRef = useRef(null);
@@ -51,6 +56,10 @@ export function useClapDetector(onTrigger) {
     }
     analyserRef.current = null;
     clapsRef.current = [];
+    aboveSinceRef.current = 0;
+    peakRmsRef.current = 0;
+    peakHighFrequencyRef.current = 0;
+    calibrationUntilRef.current = 0;
     startingRef.current = false;
     setClapCount(0);
     setListening(false);
@@ -99,8 +108,13 @@ export function useClapDetector(onTrigger) {
       baselineRef.current = 0.025;
       previousAboveRef.current = false;
       clapsRef.current = [];
+      aboveSinceRef.current = 0;
+      peakRmsRef.current = 0;
+      peakHighFrequencyRef.current = 0;
+      calibrationUntilRef.current = performance.now() + 1200;
       setClapCount(0);
       setListening(true);
+      setCalibrating(true);
       setMicRecovering(false);
       startingRef.current = false;
 
@@ -108,6 +122,7 @@ export function useClapDetector(onTrigger) {
         if (!shouldRecoverRef.current) return;
         setListening(false);
         setClapCount(0);
+        setCalibrating(false);
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
         streamRef.current = null;
@@ -148,20 +163,45 @@ export function useClapDetector(onTrigger) {
         }
 
         const dynamicThreshold = Math.max(0.075, baselineRef.current * 3.8);
-        const isAbove = rms > dynamicThreshold && highFrequencyRatio > 0.14;
         const now = performance.now();
+        const calibratingNow = now < calibrationUntilRef.current;
+        if (calibratingNow !== (calibrationUntilRef.current > 0 && now < calibrationUntilRef.current)) {
+          setCalibrating(calibratingNow);
+        }
+        if (calibrationUntilRef.current && now >= calibrationUntilRef.current) {
+          calibrationUntilRef.current = 0;
+          setCalibrating(false);
+        }
 
-        if (isAbove && !previousAboveRef.current && now - lastDetectedRef.current > REFRACTORY_MS) {
-          lastDetectedRef.current = now;
-          setLastClapAt(Date.now());
-          clapsRef.current = [...clapsRef.current, now].filter((time) => now - time <= WINDOW_MS);
-          setClapCount(clapsRef.current.length);
+        const isAbove = rms > dynamicThreshold && highFrequencyRatio > 0.14;
+        if (isAbove && !previousAboveRef.current) {
+          aboveSinceRef.current = now;
+          peakRmsRef.current = rms;
+          peakHighFrequencyRef.current = highFrequencyRatio;
+        } else if (isAbove) {
+          peakRmsRef.current = Math.max(peakRmsRef.current, rms);
+          peakHighFrequencyRef.current = Math.max(peakHighFrequencyRef.current, highFrequencyRatio);
+        } else if (!isAbove && previousAboveRef.current) {
+          const pulseMs = aboveSinceRef.current ? now - aboveSinceRef.current : 0;
+          const transientClap = !calibratingNow && pulseMs >= 30 && pulseMs <= 320 &&
+            peakRmsRef.current >= dynamicThreshold * 1.12 && peakHighFrequencyRef.current >= 0.16;
 
-          if (clapsRef.current.length >= 3) {
-            clapsRef.current = [];
-            setClapCount(0);
-            onTriggerRef.current?.({ type: "three-clap", detectedAt: Date.now() });
+          if (transientClap && now - lastDetectedRef.current > REFRACTORY_MS) {
+            lastDetectedRef.current = now;
+            setLastClapAt(Date.now());
+            clapsRef.current = [...clapsRef.current, now].filter((time) => now - time <= WINDOW_MS);
+            setClapCount(clapsRef.current.length);
+
+            if (clapsRef.current.length >= 3) {
+              clapsRef.current = [];
+              setClapCount(0);
+              onTriggerRef.current?.({ type: "three-clap", detectedAt: Date.now() });
+            }
           }
+
+          aboveSinceRef.current = 0;
+          peakRmsRef.current = 0;
+          peakHighFrequencyRef.current = 0;
         }
 
         previousAboveRef.current = isAbove;
@@ -217,7 +257,7 @@ export function useClapDetector(onTrigger) {
   }, [start]);
 
   useEffect(() => stop, [stop]);
-  return { listening, clapCount, lastClapAt, micError, micRecovering, start, stop };
+  return { listening, clapCount, lastClapAt, micError, micRecovering, calibrating, start, stop };
 }
 
 export function useDeviceLocation() {
