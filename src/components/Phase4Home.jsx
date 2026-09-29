@@ -1,4 +1,4 @@
-export default function Phase4Home({user,active,listening,micRecovering,calibrating,clapCount,contacts,location,watching,history,onEmergency,onLocation,onNav}){
+export default function Phase4Home({user,active,listening,micRecovering,calibrating,signalLevel,clapCount,contacts,location,watching,history,onEmergency,onLocation,onNav}){
   return <div className="page">
     <section className="hero"><div>
       <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 19</div>
