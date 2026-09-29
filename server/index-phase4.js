@@ -681,6 +681,9 @@ app.get("/api/v1/safety/drill", async (req, res) => {
         clapTransientFiltering: true,
         sensorWarmup: true,
         locationSyncDebounce: true,
+        sensorTelemetry: true,
+        audioNotStored: true,
+        telemetryUi: true,
       },
       guarantees: {
         createsSosEvent: false,
