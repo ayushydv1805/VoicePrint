@@ -125,9 +125,9 @@ export default function Phase8App() {
           <div className="setting-item">
             <div>
               <strong>Microphone</strong>
-              <span>{c.micRecovering ? "Microphone interrupted · reconnecting automatically" : c.listening ? `${c.clapCount}/3 claps detected · automatically monitored` : "Starting automatically when protection is active"}</span>
+              <span>{c.micRecovering ? "Microphone interrupted · reconnecting automatically" : c.calibrating ? "Calibrating background sound before clap detection" : c.listening ? `${c.clapCount}/3 claps detected · automatically monitored` : "Starting automatically when protection is active"}</span>
             </div>
-            <span className={c.listening ? "setting-state good" : "setting-state"}>{c.micRecovering ? "RECOVERING" : c.listening ? "LISTENING" : "STARTING"}</span>
+            <span className={c.micRecovering || c.listening ? "setting-state good" : "setting-state"}>{c.micRecovering ? "RECOVERING" : c.calibrating ? "CALIBRATING" : c.listening ? "LISTENING" : "STARTING"}</span>
           </div>
           {c.micError && <div className="setting-error">🎙 {c.micError}</div>}
 
