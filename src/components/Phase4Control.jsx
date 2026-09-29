@@ -1,4 +1,4 @@
-export default function Phase4Control({user,listening,micRecovering,count,onTest}){
+export default function Phase4Control({user,listening,micRecovering,calibrating,count,onTest}){
   return <div className="page">
     <div className="page-heading"><div><span className="panel-kicker">PHASE 18 · CONTROL CENTER</span><h1>Safety control</h1><p>{user?"Cloud session connected.":"Local demo mode."}</p></div></div>
     <div className="emergency-layout"><div className="emergency-card">
