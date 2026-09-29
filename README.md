@@ -782,7 +782,7 @@ Test:
 
 ## Deployment parity
 
-The `main` branch contains the cumulative VoicePrint release through Phase 17. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
+The `main` branch contains the cumulative VoicePrint release through Phase 18. Because the Vercel project is connected to GitHub, pushes to `main` are intended to create the latest production frontend deployment. Phase 8 includes the Phase 6 reliability layer and Phase 7 safety/privacy layer; they are deployed together as one cumulative build.
 
 
 ## Frontend — Vercel
@@ -861,6 +861,7 @@ Before real-world use, verify:
 | Phase 15 | Automatic microphone listening without a manual start action |
 | Phase 16 | Automatic microphone recovery after lifecycle interruptions |
 | Phase 17 | Production timing alignment, API default cleanup and responsive visual polish |
+| Phase 18 | Sensor warm-up, transient clap filtering, microphone recovery visibility and initial location-sync debounce |
 
 ---
 
