@@ -84,6 +84,11 @@ export function useClapDetector(onTrigger) {
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
       acquiredStream = stream;
+      if (!shouldRecoverRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        startingRef.current = false;
+        return false;
+      }
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) {
         stream.getTracks().forEach((track) => track.stop());
@@ -96,6 +101,12 @@ export function useClapDetector(onTrigger) {
 
       const context = new AudioContextClass();
       await context.resume();
+      if (!shouldRecoverRef.current) {
+        context.close().catch(() => {});
+        stream.getTracks().forEach((track) => track.stop());
+        startingRef.current = false;
+        return false;
+      }
       const analyser = context.createAnalyser();
       analyser.fftSize = 2048;
       analyser.smoothingTimeConstant = 0.08;
