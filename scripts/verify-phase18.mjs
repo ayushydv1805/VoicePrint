@@ -76,13 +76,13 @@ for (const file of ["src/hooks/usePhase8DeploymentStatus.js", "src/hooks/usePhas
 }
 
 const app = fs.readFileSync("src/Phase8App.jsx", "utf8");
-if (!app.includes("VoicePrint v0.17 · Phase 18")) {
+if (!app.includes("VoicePrint v0.18 · Phase 18")) {
   throw new Error("App shell release marker is not Phase 18");
 }
 
 for (const file of ["server/index.js", "server/index-phase4.js"]) {
   const server = fs.readFileSync(file, "utf8");
-  if (!server.includes('phase: "17"')) throw new Error("Phase 18 API marker missing in " + file);
+  if (!server.includes('phase: "18"')) throw new Error("Phase 18 API marker missing in " + file);
   for (const marker of [
     "microphoneAutoRecovery: true",
     "serverTimedConfirmation: true",
@@ -99,7 +99,7 @@ const sensor = fs.readFileSync("src/hooks/useSafetySensors.js", "utf8");
 if (!sensor.includes("pulseMs >= 30 && pulseMs <= 320")) throw new Error("Clap pulse-duration filter is missing");
 
 const sw = fs.readFileSync("public/sw.js", "utf8");
-if (!sw.includes("voiceprint-shell-v18")) throw new Error("PWA cache namespace is not v17");
+if (!sw.includes("voiceprint-shell-v18")) throw new Error("PWA cache namespace is not v18");
 
 const rootPackage = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const serverPackage = JSON.parse(fs.readFileSync("server/package.json", "utf8"));
