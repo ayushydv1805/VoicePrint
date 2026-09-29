@@ -1064,3 +1064,25 @@ Phase 17 does not change the underlying browser limitation: a web app cannot gua
 The release is version 0.17.0.
 
 <!-- Phase 17 release verification: frontend/backend timing and UI polish deployed -->
+
+
+## Phase 18 — Sensor stability and SOS-flow hardening
+
+Phase 18 reduces avoidable false triggers and duplicate cloud writes while preserving the automatic hands-free flow.
+
+### Sensor stability
+
+- A short microphone warm-up calibrates room/background noise before accepting clap triggers.
+- Clap detection now favors short transient sound pulses instead of sustained loud audio.
+- Microphone recovery remains automatic after a stream interruption or page visibility restore.
+- Home, Safety Control, and Settings expose calibration/recovery states instead of showing a misleading healthy state.
+
+### SOS flow correctness
+
+When the initial SOS event already contains a location snapshot, the client records that sync point immediately so it does not send a redundant location update seconds later and hit the server-side location throttle.
+
+### Browser boundary
+
+The app still depends on browser microphone, audio, and geolocation capabilities. A web page cannot guarantee microphone processing while it is fully closed or suspended by the operating system.
+
+The release is version 0.18.0 and the PWA shell cache namespace is voiceprint-shell-v18.
