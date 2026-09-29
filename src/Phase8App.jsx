@@ -206,6 +206,16 @@ export default function Phase8App() {
         onNotifications={p5.requestNotifications}
         notificationPermission={p5.notificationPermission}
       />
+      <Phase19SensorDiagnostics
+        active={c.active}
+        listening={c.listening}
+        calibrating={c.calibrating}
+        micRecovering={c.micRecovering}
+        signalLevel={c.signalLevel}
+        clapCount={c.clapCount}
+        lastClapAt={c.lastClapAt}
+        micError={c.micError}
+      />
       <PrivacyPanel user={c.user} history={c.history} onClearLocalData={clearLocalData} />
       <ReliabilityPanel
         status={p6.status}
