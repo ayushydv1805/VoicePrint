@@ -1,21 +1,21 @@
-export default function Phase4Home({user,active,listening,micRecovering,clapCount,contacts,location,watching,history,onEmergency,onLocation,onNav}){
+export default function Phase4Home({user,active,listening,micRecovering,calibrating,clapCount,contacts,location,watching,history,onEmergency,onLocation,onNav}){
   return <div className="page">
     <section className="hero"><div>
-      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 17</div>
+      <div className="eyebrow"><span className="eyebrow-line"/> HANDS-FREE SAFETY · PHASE 18</div>
       <h1>When you can't<br/><span>reach your phone.</span></h1>
       <p className="hero-copy">Signed-in cloud storage keeps trusted contacts and event history available across sessions. Clap detection and GPS still run in the browser.</p>
-      <div className="hero-actions"><button className="primary-btn" onClick={onEmergency}>✦ Test SOS</button><div className={micRecovering?"secondary-btn listening-btn recovering-btn":listening?"secondary-btn listening-btn":"secondary-btn"} aria-live="polite"><span className="mic-live-dot"/>{micRecovering?"Reconnecting microphone…":listening?`Always listening · ${clapCount}/3`:"Starting microphone…"}</div></div>
+      <div className="hero-actions"><button className="primary-btn" onClick={onEmergency}>✦ Test SOS</button><div className={micRecovering?"secondary-btn listening-btn recovering-btn":listening?"secondary-btn listening-btn":"secondary-btn"} aria-live="polite"><span className="mic-live-dot"/>{micRecovering?"Reconnecting microphone…":calibrating?"Calibrating sound…":listening?`Always listening · ${clapCount}/3`:"Starting microphone…"}</div></div>
       <div className="hero-meta"><span>{user?"✓ Signed in":"◌ Local demo"}</span><span>{contacts.length} contacts</span><span>{history.length} cloud events</span></div>
-    </div><div className="hero-orb"><div className="orb-ring ring-one"/><div className="orb-ring ring-two"/><div className={listening?"orb-core listening-core":"orb-core"}><span>✦</span><span>{listening?"LISTENING":"READY"}</span></div></div></section>
+    </div><div className="hero-orb"><div className="orb-ring ring-one"/><div className="orb-ring ring-two"/><div className={listening?"orb-core listening-core":"orb-core"}><span>✦</span><span>{micRecovering?"RECOVERING":calibrating?"CALIBRATING":listening?"LISTENING":"READY"}</span></div></div></section>
 
     <section className="status-grid">
-      <Card title="Sound Detection" value={micRecovering?"Recovering":listening?"Listening":"Starting…"} detail={micRecovering?"Mic stream interrupted · automatic recovery":listening?`${clapCount}/3 claps · automatic`:"Requesting microphone access"} good={listening && !micRecovering}/>
+      <Card title="Sound Detection" value={micRecovering?"Recovering":calibrating?"Calibrating":listening?"Listening":"Starting…"} detail={micRecovering?"Mic stream interrupted · automatic recovery":calibrating?"Filtering background sound before monitoring":listening?`${clapCount}/3 claps · automatic`:"Requesting microphone access"} good={listening && !micRecovering && !calibrating}/>
       <Card title="Location" value={watching?"Live":location?"Ready":"Off"} detail={watching?"High accuracy":"Tap to enable"} good={!!location} onClick={onLocation}/>
       <Card title="Trusted Contacts" value={String(contacts.length)} detail={user?"Cloud saved":"Sign in required"} good={contacts.length>0} onClick={()=>onNav("contacts")}/>
     </section>
 
     <section className="dashboard-grid"><div className="panel map-panel"><div className="panel-head"><div><span className="panel-kicker">LOCATION</span><h2>Device location</h2></div></div><Map location={location}/></div>
-      <div className="panel checklist"><div className="panel-head"><div><span className="panel-kicker">PHASE 17</span><h2>Protection checklist</h2></div></div><Row done={listening} text="Clap detection"/><Row done={!!location} text="Location permission"/><Row done={contacts.length>0} text="Trusted contact"/><Row done={!!user} text="Cloud account"/><Row done={history.length>0} text="Persistent history"/></div></section>
+      <div className="panel checklist"><div className="panel-head"><div><span className="panel-kicker">PHASE 18</span><h2>Protection checklist</h2></div></div><Row done={listening} text="Clap detection"/><Row done={!!location} text="Location permission"/><Row done={contacts.length>0} text="Trusted contact"/><Row done={!!user} text="Cloud account"/><Row done={history.length>0} text="Persistent history"/></div></section>
     {!user&&<div className="phase-note"><span>04</span><div><strong>Cloud features are locked until sign in.</strong><br/>Local detection and GPS remain available for testing.</div></div>}
   </div>;
 }
