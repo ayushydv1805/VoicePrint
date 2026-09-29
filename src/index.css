@@ -451,3 +451,10 @@ body{
   .phase19-facts{grid-template-columns:1fr}
   .phase19-meter-card{padding:13px}
 }
+
+.sensor-live-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin-top:13px;max-width:620px}
+.sensor-live-row>span{font-size:8px;letter-spacing:.12em;color:#6d7a92}
+.sensor-live-row>strong{font-family:"Space Grotesk";font-size:10px;color:#b7b0ff;min-width:32px;text-align:right}
+.sensor-live-track{height:6px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.045)}
+.sensor-live-track>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#5e54e8,#7c6cff,#35d39a);transition:width .12s ease}
+@media(max-width:760px){.sensor-live-row{max-width:none}}
