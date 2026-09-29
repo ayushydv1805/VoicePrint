@@ -410,3 +410,15 @@ body{
   .panel{border-radius:15px}
   .sos-modal{padding:22px}
 }
+
+/* Phase 18 sensor stability */
+.recovering-btn{border-color:rgba(251,191,36,.2)!important;color:#e7c878!important;background:rgba(251,191,36,.045)!important}
+.sos-auto-status.calibrating{border-color:rgba(124,108,255,.22);background:rgba(124,108,255,.055);color:#aaa2ff}
+.sos-auto-status.calibrating span{background:#8b7cff;box-shadow:0 0 12px rgba(124,108,255,.45)}
+.sensor-health-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sensor-health-strip span{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.025);color:#7b879f;font-size:9px;font-weight:700;letter-spacing:.04em}
+.sensor-health-strip span::before{content:"";width:6px;height:6px;border-radius:50%;background:#68758d}
+.sensor-health-strip span.good{color:#84e7bb;border-color:rgba(52,211,153,.16);background:rgba(52,211,153,.045)}
+.sensor-health-strip span.good::before{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.4)}
+.sensor-health-strip span.warn{color:#e2c978;border-color:rgba(251,191,36,.16);background:rgba(251,191,36,.045)}
+.sensor-health-strip span.warn::before{background:#f5c85a}
