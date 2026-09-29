@@ -57,7 +57,7 @@ export default function usePhase8DeploymentStatus() {
         api: {
           reachable: apiResponse.ok && apiBody?.ok === true,
           phase: apiBody?.version || "unknown",
-          releaseParity: apiBody?.version === "phase-17",
+          releaseParity: apiBody?.version === "phase-18",
           noStore: (apiResponse.headers.get("Cache-Control") || "").toLowerCase().includes("no-store"),
           requestTracing: Boolean(apiBody?.requestId),
         },
