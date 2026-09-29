@@ -9,6 +9,7 @@ export function useClapDetector(onTrigger) {
   const [micError, setMicError] = useState("");
   const [micRecovering, setMicRecovering] = useState(false);
   const [calibrating, setCalibrating] = useState(false);
+  const [signalLevel, setSignalLevel] = useState(0);
   const [lastClapAt, setLastClapAt] = useState(null);
   const streamRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -20,6 +21,7 @@ export function useClapDetector(onTrigger) {
   const aboveSinceRef = useRef(0);
   const peakRmsRef = useRef(0);
   const peakHighFrequencyRef = useRef(0);
+  const lastSignalUiAtRef = useRef(0);
   const calibrationUntilRef = useRef(0);
   const startingRef = useRef(false);
   const shouldRecoverRef = useRef(false);
@@ -59,7 +61,9 @@ export function useClapDetector(onTrigger) {
     aboveSinceRef.current = 0;
     peakRmsRef.current = 0;
     peakHighFrequencyRef.current = 0;
+    lastSignalUiAtRef.current = 0;
     calibrationUntilRef.current = 0;
+    setSignalLevel(0);
     startingRef.current = false;
     setClapCount(0);
     setListening(false);
@@ -122,6 +126,7 @@ export function useClapDetector(onTrigger) {
       aboveSinceRef.current = 0;
       peakRmsRef.current = 0;
       peakHighFrequencyRef.current = 0;
+      lastSignalUiAtRef.current = 0;
       calibrationUntilRef.current = performance.now() + 1200;
       setClapCount(0);
       setListening(true);
@@ -175,6 +180,11 @@ export function useClapDetector(onTrigger) {
 
         const dynamicThreshold = Math.max(0.075, baselineRef.current * 3.8);
         const now = performance.now();
+        if (now - lastSignalUiAtRef.current >= 120) {
+          const normalized = Math.min(100, Math.round((rms / Math.max(dynamicThreshold * 2.2, 0.12)) * 100));
+          lastSignalUiAtRef.current = now;
+          setSignalLevel(normalized);
+        }
         const calibratingNow = calibrationUntilRef.current > 0 && now < calibrationUntilRef.current;
         if (calibrationUntilRef.current && now >= calibrationUntilRef.current) {
           calibrationUntilRef.current = 0;
@@ -265,7 +275,7 @@ export function useClapDetector(onTrigger) {
   }, [start]);
 
   useEffect(() => stop, [stop]);
-  return { listening, clapCount, lastClapAt, micError, micRecovering, calibrating, start, stop };
+  return { listening, clapCount, lastClapAt, micError, micRecovering, calibrating, signalLevel, start, stop };
 }
 
 export function useDeviceLocation() {
