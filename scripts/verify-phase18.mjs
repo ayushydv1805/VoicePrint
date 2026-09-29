@@ -5,7 +5,7 @@ const requiredFiles = [
   "src/Phase8App.jsx",
   "src/hooks/useSafetySensors.js",
   "src/hooks/usePhase4Core.js",
-  "scripts/verify-phase18.mjs",
+  "scripts/verify-phase19.mjs",
   "src/components/Phase4Home.jsx",
   "src/components/Phase4Control.jsx",
   "src/components/Phase4Modal.jsx",
