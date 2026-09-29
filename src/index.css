@@ -422,3 +422,32 @@ body{
 .sensor-health-strip span.good::before{background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.4)}
 .sensor-health-strip span.warn{color:#e2c978;border-color:rgba(251,191,36,.16);background:rgba(251,191,36,.045)}
 .sensor-health-strip span.warn::before{background:#f5c85a}
+
+
+/* Phase 19 — sensor telemetry */
+.phase19-sensor-panel{margin-top:16px;background:linear-gradient(145deg,rgba(15,28,48,.88),rgba(8,13,25,.84));border-color:rgba(124,108,255,.16)}
+.phase19-sensor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.phase19-sensor-head h2{margin:7px 0 5px;font-family:"Space Grotesk";font-size:21px;letter-spacing:-.02em}
+.phase19-sensor-head p{margin:0;color:#74819a;font-size:11px;line-height:1.5}
+.phase19-state{padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:rgba(255,255,255,.025);color:#8995ab;font-size:9px;font-weight:800;white-space:nowrap}
+.phase19-state.good{border-color:rgba(52,211,153,.16);background:rgba(52,211,153,.045);color:#87e8bd}
+.phase19-meter-card{margin-top:16px;padding:15px;border:1px solid rgba(255,255,255,.065);border-radius:14px;background:rgba(255,255,255,.018)}
+.phase19-meter-top,.phase19-meter-meta{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.phase19-meter-top span,.phase19-meter-meta span{font-size:8px;letter-spacing:.12em;color:#6f7c94}
+.phase19-meter-top strong{font-family:"Space Grotesk";font-size:18px;color:#dfe6f3}
+.phase19-meter-track{height:10px;margin-top:10px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.055)}
+.phase19-meter-track span{display:block;height:100%;min-width:0;border-radius:inherit;background:linear-gradient(90deg,#5e54e8,#7c6cff,#35d39a);transition:width .12s ease}
+.phase19-meter-meta{margin-top:9px}
+.phase19-meter-meta span:last-child{color:#9b9fff;letter-spacing:.04em}
+.phase19-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}
+.phase19-facts>div{padding:12px;border:1px solid rgba(255,255,255,.06);border-radius:12px;background:rgba(255,255,255,.014)}
+.phase19-facts span,.phase19-facts strong{display:block}
+.phase19-facts span{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#6d7991}
+.phase19-facts strong{margin-top:6px;font-size:11px;color:#d6ddec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phase19-error{margin-top:10px;padding:10px 12px;border:1px solid rgba(255,107,132,.16);border-radius:10px;background:rgba(255,107,132,.045);color:#ff9aad;font-size:10px;line-height:1.45}
+@media(max-width:760px){
+  .phase19-sensor-head{flex-direction:column}
+  .phase19-state{align-self:flex-start}
+  .phase19-facts{grid-template-columns:1fr}
+  .phase19-meter-card{padding:13px}
+}
