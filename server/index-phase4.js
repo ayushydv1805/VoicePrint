@@ -675,6 +675,9 @@ app.get("/api/v1/safety/drill", async (req, res) => {
         streamInterruptionRecovery: true,
         serverTimedConfirmation: true,
         deploymentSafeDefaults: true,
+        clapTransientFiltering: true,
+        sensorWarmup: true,
+        locationSyncDebounce: true,
       },
       guarantees: {
         createsSosEvent: false,
