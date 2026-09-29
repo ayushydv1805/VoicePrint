@@ -95,7 +95,6 @@ for (const file of ["server/index.js", "server/index-phase4.js"]) {
   }
 }
 
-const sensor = fs.readFileSync("src/hooks/useSafetySensors.js", "utf8");
 if (!sensor.includes("pulseMs >= 30 && pulseMs <= 320")) throw new Error("Clap pulse-duration filter is missing");
 
 const sw = fs.readFileSync("public/sw.js", "utf8");
